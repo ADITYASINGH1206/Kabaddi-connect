@@ -1,0 +1,22 @@
+[
+  {
+    "id": "ewaste-001",
+    "name": "Delhi Govt Authorised E-Waste Collection Facility",
+    "address": "Okhla Industrial Area Phase 1, New Delhi, Delhi 110020",
+    "lat": 28.5305,
+    "lng": 77.2798,
+    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
+    "phone": "+911126810011",
+    "instructions": "Safely drop off lead-acid batteries, CRT monitors, and chemical electronics. Do not dismantle."
+  },
+  {
+    "id": "ewaste-002",
+    "name": "Karo Sambhav Certified E-Waste Drop Point",
+    "address": "South Extension Part II, New Delhi, Delhi 110049",
+    "lat": 28.5684,
+    "lng": 77.2217,
+    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop"],
+    "phone": "+911124601122",
+    "instructions": "Free public drop box for household consumer e-waste."
+  }
+]

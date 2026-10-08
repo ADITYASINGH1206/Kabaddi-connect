@@ -1,0 +1,28 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "kabadiconnect"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+stack_name = "kabadiconnect"
+region = "ap-south-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "kabadiconnect"
+image_repositories = []
+parameter_overrides = "Environment=\"dev\" BedrockModelId=\"apac.amazon.nova-lite-v1:0\" BedrockRegion=\"ap-south-1\""
+
+[default.sync.parameters]
+watch = true
+
+[default.local_start_api.parameters]
+warm_containers = "EAGER"
+
+[default.local_start_lambda.parameters]
+warm_containers = "EAGER"

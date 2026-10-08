@@ -1,0 +1,44 @@
+[
+  {
+    "collectorId": "col-001",
+    "name": "Ramesh Kumar (रॉकी स्क्रैप)",
+    "phone": "+919876543210",
+    "lat": 28.5355,
+    "lng": 77.2625,
+    "areaName": "Kalkaji, South Delhi",
+    "accepts": ["newspaper_paper", "cardboard", "books_notebooks", "pet_bottles", "hdpe_plastic", "iron_steel", "aluminium"],
+    "accepts_ewaste": false,
+    "max_radius_km": 4.5,
+    "daily_capacity_kg": 250,
+    "active": true,
+    "language": "hi"
+  },
+  {
+    "collectorId": "col-002",
+    "name": "Imran Ali (ग्रीन रीसायकल)",
+    "phone": "+919812345678",
+    "lat": 28.5244,
+    "lng": 77.2066,
+    "areaName": "Malviya Nagar, South Delhi",
+    "accepts": ["newspaper_paper", "cardboard", "pet_bottles", "hdpe_plastic", "mixed_plastic", "plastic_bags_film", "iron_steel", "copper", "brass", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
+    "accepts_ewaste": true,
+    "max_radius_km": 6.0,
+    "daily_capacity_kg": 350,
+    "active": true,
+    "language": "hi"
+  },
+  {
+    "collectorId": "col-003",
+    "name": "Sunil Sharma (न्यू दिल्ली कबाड़ी)",
+    "phone": "+919899001122",
+    "lat": 28.5450,
+    "lng": 77.1926,
+    "areaName": "Hauz Khas, South Delhi",
+    "accepts": ["newspaper_paper", "cardboard", "books_notebooks", "glass_bottles", "iron_steel", "aluminium"],
+    "accepts_ewaste": false,
+    "max_radius_km": 3.5,
+    "daily_capacity_kg": 200,
+    "active": true,
+    "language": "hi"
+  }
+]

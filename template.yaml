@@ -1,0 +1,312 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: KabadiConnect - AI-Powered Informal Recycling Marketplace Backend (M0 and M1)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment stage name
+  BedrockModelId:
+    Type: String
+    Default: "apac.amazon.nova-lite-v1:0"
+    Description: "Amazon Bedrock multimodal model ID or inference profile (e.g. apac.amazon.nova-lite-v1:0, anthropic.claude-3-haiku-20240307-v1:0)"
+  BedrockRegion:
+    Type: String
+    Default: "ap-south-1"
+    Description: "AWS Region hosting the Bedrock model (default: ap-south-1 Mumbai)"
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.12
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        STAGE: !Ref Environment
+        PHOTOS_BUCKET: !Ref PhotosBucket
+        COLLECTORS_TABLE: !Ref CollectorsTable
+        RATES_TABLE: !Ref RatesTable
+        LISTINGS_TABLE: !Ref ListingsTable
+        PICKUPS_TABLE: !Ref PickupsTable
+        BEDROCK_MODEL_ID: !Ref BedrockModelId
+        BEDROCK_REGION: !Ref BedrockRegion
+
+Resources:
+  # HTTP API Gateway with CORS
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - x-api-key
+        AllowOrigins:
+          - '*'
+        MaxAge: 300
+
+  # S3 Photo Bucket: Private, 7-day lifecycle, CORS for client PUT
+  PhotosBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireScrapPhotos7Days
+            Status: Enabled
+            ExpirationInDays: 7
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3000
+
+  # DynamoDB: Collectors Table (On-Demand)
+  CollectorsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: collectorId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: collectorId
+          KeyType: HASH
+
+  # DynamoDB: Rates Table (On-Demand)
+  RatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: material
+          AttributeType: S
+      KeySchema:
+        - AttributeName: material
+          KeyType: HASH
+
+  # DynamoDB: Listings Table (On-Demand) with GSI and Image Cache support
+  ListingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: listingId
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: listingId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: status-createdAt-index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # DynamoDB: Pickups Table (On-Demand)
+  PickupsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pickupId
+          AttributeType: S
+        - AttributeName: collectorId
+          AttributeType: S
+        - AttributeName: acceptedAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pickupId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: collectorId-date-index
+          KeySchema:
+            - AttributeName: collectorId
+              KeyType: HASH
+            - AttributeName: acceptedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # Lambda: GET /health
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.health.handler.lambda_handler
+      Events:
+        HealthApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+
+  # Lambda: POST /uploads (presigned PUT, JPEG only, 5 MB)
+  UploadsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.uploads.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub '${PhotosBucket.Arn}/*'
+      Events:
+        UploadsApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /uploads
+            Method: POST
+
+  # Lambda: POST /analyze (Bedrock Converse multimodal, cache in DynamoDB, retries & fallback)
+  AnalyzeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.analyze.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub '${PhotosBucket.Arn}/*'
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt ListingsTable.Arn
+      Events:
+        AnalyzeApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /analyze
+            Method: POST
+
+  # Lambda: GET /rates and Listings stubs
+  ListingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.listings.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+                - dynamodb:Query
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt ListingsTable.Arn
+                - !GetAtt RatesTable.Arn
+                - !Sub '${ListingsTable.Arn}/index/*'
+      Events:
+        RatesApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /rates
+            Method: GET
+        ListingsCreateApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /listings
+            Method: POST
+        ListingsGetApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /listings/{id}
+            Method: GET
+
+  # Lambda: GET /impact (aggregates stub for M0/M1)
+  ImpactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.impact.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+                - dynamodb:Query
+              Resource:
+                - !GetAtt PickupsTable.Arn
+                - !GetAtt ListingsTable.Arn
+      Events:
+        ImpactApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /impact
+            Method: GET
+
+  # CloudWatch Alarm: Lambda Error Rate
+  LambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alerts when KabadiConnect Lambda errors breach threshold"
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+Outputs:
+  HttpApiUrl:
+    Description: HTTP API endpoint URL
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+  PhotosBucketName:
+    Description: Name of private S3 bucket for scrap photo uploads
+    Value: !Ref PhotosBucket
+  RatesTableName:
+    Description: DynamoDB table name for rates
+    Value: !Ref RatesTable
+  ListingsTableName:
+    Description: DynamoDB table name for listings
+    Value: !Ref ListingsTable

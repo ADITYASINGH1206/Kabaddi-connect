@@ -1,0 +1,138 @@
+[
+  {
+    "code": "newspaper_paper",
+    "name_en": "Newspaper & Paper",
+    "name_hi": "अखबार और रद्दी कागज",
+    "category": "paper",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "cardboard",
+    "name_en": "Cardboard / Boxes",
+    "name_hi": "गत्ता / कार्टन",
+    "category": "paper",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "books_notebooks",
+    "name_en": "Books & Notebooks",
+    "name_hi": "किताबें और कॉपियां",
+    "category": "paper",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "pet_bottles",
+    "name_en": "PET Bottles",
+    "name_hi": "PET बोतलें",
+    "category": "plastic",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "hdpe_plastic",
+    "name_en": "HDPE Plastic",
+    "name_hi": "मजबूत प्लास्टिक (HDPE)",
+    "category": "plastic",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "mixed_plastic",
+    "name_en": "Mixed Plastic",
+    "name_hi": "मिश्रित प्लास्टिक",
+    "category": "plastic",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "plastic_bags_film",
+    "name_en": "Plastic Bags / Film",
+    "name_hi": "पॉलीथीन / प्लास्टिक बैग",
+    "category": "plastic",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "iron_steel",
+    "name_en": "Iron & Steel",
+    "name_hi": "लोहा और स्टील",
+    "category": "metal",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "aluminium",
+    "name_en": "Aluminium",
+    "name_hi": "एल्युमिनियम",
+    "category": "metal",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "copper",
+    "name_en": "Copper",
+    "name_hi": "तांबा",
+    "category": "metal",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "brass",
+    "name_en": "Brass",
+    "name_hi": "पीतल",
+    "category": "metal",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "glass_bottles",
+    "name_en": "Glass Bottles",
+    "name_hi": "कांच की बोतलें",
+    "category": "glass",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "ewaste_phone",
+    "name_en": "Old Phones & Tablets",
+    "name_hi": "पुराने मोबाइल और टैबलेट",
+    "category": "ewaste",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "ewaste_laptop",
+    "name_en": "Laptops & Computers",
+    "name_hi": "लैपटॉप और कंप्यूटर",
+    "category": "ewaste",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "ewaste_small_appliance",
+    "name_en": "Small Appliances & Wires",
+    "name_hi": "छोटे इलेक्ट्रॉनिक्स व तार",
+    "category": "ewaste",
+    "hazardous": false,
+    "authorised_channel_only": false
+  },
+  {
+    "code": "ewaste_battery_or_crt",
+    "name_en": "Lead Batteries & CRT Displays",
+    "name_hi": "बैटरी व सीआरटी मॉनिटर (खतरनाक)",
+    "category": "ewaste",
+    "hazardous": true,
+    "authorised_channel_only": true
+  },
+  {
+    "code": "non_recyclable",
+    "name_en": "Non-recyclable / Waste",
+    "name_hi": "गैर-पुनर्चक्रण योग्य कचरा",
+    "category": "other",
+    "hazardous": false,
+    "authorised_channel_only": false
+  }
+]

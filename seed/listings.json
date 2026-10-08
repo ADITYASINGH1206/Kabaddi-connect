@@ -1,0 +1,21 @@
+[
+  {
+    "listingId": "listing-demo-001",
+    "status": "OPEN",
+    "sellerName": "Pooja Verma",
+    "sellerPhone": "+919876500001",
+    "address": "B-42, Greater Kailash 1, New Delhi",
+    "lat": 28.5482,
+    "lng": 77.2384,
+    "pickupWindow": {"date": "2026-10-09", "from": "16:00", "to": "18:00"},
+    "imageKey": "sample-newspaper-bottles.jpg",
+    "items": [
+      {"material": "newspaper_paper", "weight_kg_low": 8.0, "weight_kg_high": 12.0, "weight_kg_user": 10.0, "confidence": 0.92},
+      {"material": "pet_bottles", "weight_kg_low": 1.5, "weight_kg_high": 2.5, "weight_kg_user": 2.0, "confidence": 0.85}
+    ],
+    "estimate": {"price_low": 118.5, "price_high": 247.0},
+    "visionUsed": true,
+    "matchedCollectorIds": ["col-001"],
+    "createdAt": "2026-10-08T18:00:00Z"
+  }
+]

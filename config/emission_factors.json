@@ -1,0 +1,22 @@
+{
+  "_notice": "PLACEHOLDER EMISSION FACTORS (kg CO2e avoided per kg recycled). Sourced from illustrative lifecycle analyses. Replace with official local lifecycle datasets before production.",
+  "factors": {
+    "newspaper_paper": 1.2,
+    "cardboard": 0.9,
+    "books_notebooks": 1.1,
+    "pet_bottles": 1.8,
+    "hdpe_plastic": 1.6,
+    "mixed_plastic": 1.3,
+    "plastic_bags_film": 0.8,
+    "iron_steel": 1.5,
+    "aluminium": 9.1,
+    "copper": 3.8,
+    "brass": 3.2,
+    "glass_bottles": 0.3,
+    "ewaste_phone": 15.0,
+    "ewaste_laptop": 22.0,
+    "ewaste_small_appliance": 5.5,
+    "ewaste_battery_or_crt": 4.0,
+    "non_recyclable": 0.0
+  }
+}
