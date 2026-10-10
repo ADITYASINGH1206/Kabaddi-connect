@@ -140,7 +140,8 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
   };
 
   return (
-    <Page className="gap-4 pb-28">
+    <Page className="gap-4 pb-28 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-x-10 lg:pt-8">
+      <div className="flex flex-col gap-4 lg:sticky lg:top-20">
       {/* Retake alert when photo quality is poor */}
       {!analysis.photo_quality_ok && (
         <Notice tone="warn" title={t.retakePrompt} icon={<TriangleAlert className="h-5 w-5" aria-hidden />}>
@@ -197,6 +198,9 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
         </div>
       )}
 
+      </div>
+
+      <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-xl">
           {t.materialsFound} ({items.length})
@@ -299,13 +303,15 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
         </ul>
       )}
 
+      </div>
+
       {/* Sticky action bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-paper">
-        <div className="mx-auto max-w-lg p-3">
+        <div className="mx-auto max-w-lg p-3 lg:flex lg:max-w-5xl lg:justify-end lg:px-8">
           <button
             disabled={items.length === 0}
             onClick={() => onProceed(items, priceRange)}
-            className={btnPrimary}
+            className={`${btnPrimary} lg:!w-auto lg:min-w-[22rem]`}
           >
             <span>{t.proceedToPickup}</span>
             <ChevronRight className="h-5 w-5" aria-hidden />

@@ -230,7 +230,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
   ] as const;
 
   return (
-    <Page className="gap-4">
+    <Page className="gap-4 lg:pt-8">
       <div>
         <h1 className="font-display text-3xl leading-tight">{t.collectorTitle}</h1>
         {selectedCollector && (
@@ -240,7 +240,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
         )}
       </div>
 
-      <div>
+      <div className="lg:max-w-md">
         <label htmlFor="collector-select" className="mb-1.5 block text-sm font-semibold text-muted">
           {t.selectCollectorProfile}
         </label>
@@ -297,7 +297,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
           ) : requests.length === 0 ? (
             <Empty text={t.noRequests} />
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4">
               {requests.map((req) => (
                 <li key={req.listingId} className="overflow-hidden rounded-md border-2 border-ink bg-card">
                   <div className="flex items-stretch">
@@ -378,7 +378,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
           ) : pickups.length === 0 ? (
             <Empty text={t.noPickups} />
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4">
               {pickups.map((p) => (
                 <li key={p.pickupId} className="rounded-md border-2 border-ink bg-card p-3.5">
                   <div className="flex items-start justify-between gap-3">
@@ -424,14 +424,14 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
 
       {/* ROUTE */}
       {activeTab === 'route' && (
-        <div role="tabpanel" id="panel-route" aria-labelledby="tab-route" className="flex flex-col gap-4">
+        <div role="tabpanel" id="panel-route" aria-labelledby="tab-route" className="flex flex-col gap-4 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-x-10">
           {loadingRoute ? (
             <Spinner text={t.buildingRoute} />
           ) : routeData && routeData.stops.length > 0 ? (
             <>
               <section className="rounded-md border-2 border-ink bg-sun p-4">
                 <h2 className="font-display text-xl">{t.routeOptimizationTitle}</h2>
-                <dl className="mt-2 grid grid-cols-3 gap-2">
+                <dl className="mt-2 grid grid-cols-3 gap-2 lg:grid-cols-1">
                   <div>
                     <dt className="text-sm">{t.stopsCount}</dt>
                     <dd className="font-display text-3xl leading-tight tabular-nums">{routeData.stopsCount}</dd>

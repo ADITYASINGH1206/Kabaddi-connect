@@ -92,14 +92,14 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
   };
 
   return (
-    <Page className="gap-5">
-      <div>
-        <h1 className="font-display text-3xl leading-tight">{t.snapTitle}</h1>
+    <Page className="gap-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-14 lg:pt-10">
+      <div className="lg:col-start-1">
+        <h1 className="font-display text-3xl leading-tight lg:text-4xl">{t.snapTitle}</h1>
         <p className="mt-1.5 text-base text-muted">{t.snapSubtitle}</p>
       </div>
 
       {/* Viewfinder: corner brackets, like a camera frame */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border-2 border-ink bg-white">
+      <div className="relative aspect-[4/3] w-full lg:col-start-2 lg:row-span-3 lg:row-start-1 overflow-hidden rounded-md border-2 border-ink bg-white">
         {selectedPreview ? (
           <img src={selectedPreview} alt={t.previewAlt} className="h-full w-full object-cover" />
         ) : (
@@ -131,7 +131,11 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
         )}
       </div>
 
-      {errorMessage && <Notice tone="error">{errorMessage}</Notice>}
+      {errorMessage && (
+        <div className="lg:col-start-1">
+          <Notice tone="error">{errorMessage}</Notice>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}
@@ -144,7 +148,7 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
         aria-hidden
       />
 
-      <div className="mt-auto flex flex-col gap-3">
+      <div className="mt-auto flex flex-col gap-3 lg:col-start-1 lg:mt-0">
         <button disabled={isLoading} onClick={() => fileInputRef.current?.click()} className={btnSun}>
           {isLoading ? (
             <>
