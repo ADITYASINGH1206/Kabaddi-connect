@@ -1,99 +1,88 @@
-# Building KabadiConnect: AI-Powered Fair-Price Scrap Marketplace on AWS
+# Building KabadiConnect: AI-Powered Fair-Price Scrap Pickup on AWS
 
-*How we combined Amazon Bedrock Multimodal Vision, AWS Lambda, and Amazon DynamoDB to digitize informal recycling and protect landfill boundaries.*
+*How we combined Amazon Bedrock multimodal vision, AWS Lambda and Amazon DynamoDB to help households sell scrap and help collectors plan worthwhile trips.*
 
----
-
-## 1. The Informal Recycling Paradox
-
-In urban India, the informal recycling economy is powered by over 1.5 million door-to-door scrap collectors known as *kabadiwalas*. These frontline workers divert millions of tons of paper, plastics, and metals away from overflowing landfills every single year.
-
-Yet, the system suffers from deep inefficiencies on both sides:
-1. **Households lack market transparency**: Sellers rarely know what their scrap is worth, leading to frustration, haggling, or recyclables simply being discarded into municipal wet waste.
-2. **Collectors burn time and fuel on empty trips**: Informal collectors travel 12–18 kilometers daily on foot or pedal carts without knowing whether a household has 20 kilograms of high-value copper or half a kilogram of cardboard.
-3. **Hazardous e-waste leaks into landfills**: Broken CRT monitors and corroded lead batteries frequently enter informal scrap streams where unscientific handling causes toxic lead and mercury contamination.
-
-**KabadiConnect** turns this paradigm on its head: an Uber-style marketplace where a household takes a single photo of their scrap pile, receives an instant AI price range powered by **Amazon Bedrock**, and connects with the best nearby collector through cluster-optimized routing.
+> **Draft status.** Everything in `[TODO: ...]` brackets must be replaced with something we actually measured or heard, or deleted, before publishing. Do not publish invented numbers or quotes.
 
 ---
 
-## 2. Realities from Ground Visits
+## 1. The problem
 
-When visiting informal scrap dealers in North West Delhi (Rohini and Shahbad Daulatpur), one dealer noted:
+In Indian cities a large part of recycling is done by informal collectors (kabadiwalas) who buy paper, plastic and metal door to door. Two things go wrong on both sides:
 
-> *"The hardest part is not the physical work—it is the uncertainty. If I travel two kilometers into a colony and find only ₹20 worth of paper, I have lost money on that trip. If I knew upfront that three houses on the same street had scrap ready, my daily earnings would double."*
+1. **Households rarely know what their scrap is worth**, so they haggle blind, or just throw it out.
+2. **Collectors cannot tell in advance whether a trip is worth it.** A stop with a few rupees of paper costs time and fuel.
+3. **Hazardous e-waste** (batteries, CRT monitors) can enter informal scrap streams where handling is unsafe.
 
-This insight shaped our two core engineering principles:
-- **Never promise exact scale precision from a photo**: Photos give volume estimates, not legal metrology. We estimate *credible ranges* (`weight_kg_low` to `weight_kg_high`) and give the household intuitive adjustment sliders.
-- **Cluster orders aggressively**: Single pickups are rarely worth the trip. Our matching engine prioritizes geographic clustering, calculating route savings against separate round trips.
+KabadiConnect lets a household photograph its scrap, get an AI price *range*, and be matched with nearby collectors who can accept the request and see their accepted stops in a sensible order.
 
 ---
 
-## 3. Serverless Architecture on AWS
+## 2. What we learned from a real scrap dealer
 
-We architected KabadiConnect as a 100% serverless, event-driven system managed via **AWS SAM**:
+`[TODO: visit a scrap dealer or collector near you. Write 3 to 5 sentences about what they told you: the rates they pay, what makes a trip not worth it, how they decide what to pick up. Use a direct quote only if they said it and agreed to be quoted. If we do not manage a visit, delete this section instead of paraphrasing assumptions as findings.]`
+
+Design principles we chose (these are our decisions, not findings):
+- **Never promise exact weight from a photo.** The AI returns a low-high range, the household can adjust it, and the collector enters the real weight on a scale at pickup. We record estimate vs actual.
+- **Make small pickups visible as small.** Requests below a minimum value are flagged, and the household is told how many other open requests are within 1 km.
+
+---
+
+## 3. Architecture
 
 ```
-[ Household / Collector PWA ]
-             │ (HTTPS)
-   [ Amazon API Gateway (HTTP API) ]
-   ┌─────────┼──────────┬──────────┬──────────┐
-   ▼         ▼          ▼          ▼          ▼
- Lambda:   Lambda:    Lambda:    Lambda:    Lambda:
- uploads   analyze    listings   collectors pickups
-   │         │          │          │          │
-   ▼         ▼          ▼          ▼          ▼
-Amazon S3  Amazon    DynamoDB   DynamoDB   DynamoDB
-(Photos)   Bedrock   (Listings) (Collectors)(Pickups)
-           Converse
+[ Household / Collector web app (React PWA) ]
+                 | HTTPS
+        [ Amazon API Gateway (HTTP API) ]
+   +-------------+------------+-------------+-----------+
+   v             v            v             v           v
+ Lambda:      Lambda:      Lambda:       Lambda:     Lambda:
+ uploads      analyze      listings      collectors  pickups / impact
+   |            |            |             |            |
+   v            v            v             v            v
+ Amazon S3   Amazon      DynamoDB      DynamoDB     DynamoDB
+ (photos)    Bedrock     (listings)    (collectors) (pickups)
+             (Converse)
 ```
 
-### Why These AWS Services?
-1. **Amazon Bedrock (Converse API)**: Multimodal models (Amazon Nova Lite / Claude Haiku) process scrap photos in under 2 seconds, extracting material classifications, weight bounds, and safety flags in a single structured JSON inference call.
-2. **Amazon DynamoDB (On-Demand)**:
-   - Conditional writes (`ConditionExpression: attribute_not_exists(acceptedCollectorId)`) prevent race conditions when multiple collectors view the same open request simultaneously.
-   - Global Secondary Indexes (`status-createdAt-index` and `collectorId-date-index`) provide sub-10ms queries for live request feeds.
-3. **Amazon S3**:
-   - Presigned upload URLs restrict uploads to `image/jpeg` under 5 MB.
-   - S3 Lifecycle rules automatically expire scrap photos after 7 days, maintaining zero long-term storage bloat and minimizing storage costs.
-4. **AWS SAM**: One-command reproducible infrastructure (`sam build && sam deploy`) ensures our entire infrastructure can be instantiated in any AWS region in under 5 minutes.
+### Why these services
+1. **Amazon Bedrock (Converse API):** a multimodal model reads the photo and returns structured JSON (materials, weight ranges, photo quality, hazards). We validate the output against a fixed 17-material taxonomy and drop anything outside it.
+2. **Amazon DynamoDB (on-demand):** accepting a request uses a conditional write (`status = OPEN`), so if two collectors tap Accept together exactly one wins and the other gets a clear "already accepted" response. Global secondary indexes serve the open-requests and per-collector queries.
+3. **Amazon S3:** photos are uploaded straight from the phone with a presigned URL (JPEG only) and expire after 7 days.
+4. **AWS Lambda + API Gateway + SAM:** the whole backend is serverless and deploys with `sam build && sam deploy`.
 
 ---
 
-## 4. Engineering for Real-World Computer Vision Challenges
+## 4. Making a vision model usable in the real world
 
-Computer vision on scrap piles is notoriously tricky: crumpled cartons, mixed plastic bags, and dim staircase lighting. Here is how we tackled these edge cases:
-
-### A. Strict Taxonomy Enforcement
-LLMs can hallucinate speculative materials. We enforce an authoritative 17-material taxonomy (`config/taxonomy.json`). Anything outside this list is automatically filtered out before the frontend receives the response.
-
-### B. Hazardous Material Quarantine
-If Bedrock detects lead-acid batteries, broken CFL lamps, or CRT monitors, the system **quarantines** the item from informal collector matching. Instead, the API returns certified municipal drop-off centers with a verification caution.
-
-### C. Graceful Fallbacks Everywhere
-- If photo analysis fails or encounters rate limits: The UI immediately presents a manual material selector with default local averages.
-- If GPS fails: 8 pre-seeded North West Delhi neighborhood chips allow instant one-tap location selection.
-- If map tiles fail: Greedy Haversine route sequencing provides an ordered stop list and direct Google Maps deep links.
+- **Fixed taxonomy.** Models invent labels. We only accept the 17 materials in `config/taxonomy.json`.
+- **Hazard handling.** If a battery or CRT monitor is detected, it is never matched to a regular collector. The app shows drop-off points instead. *Our current drop-off entries are placeholders and must be replaced with verified, authorised facilities before real use.*
+- **Fallbacks everywhere.** If the vision call fails or is throttled, the app shows a manual material picker. If GPS fails, the user picks one of eight pre-set North-West Delhi areas. Accepted stops are shown in nearest-neighbour order with a Google Maps link per stop (we do not draw a map yet).
+- **Bounded latency.** Bedrock calls have a timeout and a retry budget so a slow model returns the manual fallback instead of a gateway error.
+- **Caching.** Results are cached by image hash so repeated demo photos are instant and cost nothing.
 
 ---
 
-## 5. Evaluation & Impact Results
+## 5. Evaluation
 
-We evaluated Bedrock's scrap estimation pipeline against physical ground truth samples weighed on calibrated digital scales (details in `docs/eval-results.md`):
+`[TODO: run eval/run_eval.py on our own scale-weighed photos (see eval/README.md) and paste the real output here: number of photos, material precision/recall, mean absolute % error of the weight midpoint, and how often the scale weight fell inside the predicted range. If we have fewer than about 20 photos, say so plainly.]`
 
-- **Material Detection Precision**: 100% on core recyclables (Newspapers, Cardboard, PET).
-- **Weight Range MAPE**: Mean Absolute Percentage Error of ~14.8% on raw Bedrock estimates, dropping to < 4% once households fine-tune via sliders.
-- **Route Optimization**: Nearest-neighbour waypoint sequencing saves an average of **28% total travel distance** compared to naive separate round trips.
-- **Environmental CO2e Avoidance**: Based on lifecycle emission factors (`config/emission_factors.json`), every 100 kg of sorted scrap diverted prevents approximately 175 kg of CO2e emissions.
+What the system measures live: for every completed pickup it stores the estimate and the collector's actual weight, so the impact page reports the real estimation error from live pickups. Until a pickup is completed, it shows no accuracy figure.
+
+**On impact numbers:** the public impact page includes a clearly labelled *demo baseline* so it is not empty on first load. Those baseline figures are illustrative, not results. CO2e values use illustrative factors in `config/emission_factors.json`. `[TODO: replace them with sourced life-cycle figures and cite the source here.]`
 
 ---
 
-## 6. Conclusion & Next Steps
+## 6. What fought back
+`[TODO: fill in honestly, for example: Bedrock model access and inference-profile setup, presigned-URL CORS, DynamoDB rejecting Python floats (our image cache silently failed until we converted to Decimal), the Lambda package not including the seed folder.]`
 
-KabadiConnect demonstrates that cutting-edge Generative AI on AWS is not just for enterprise back-offices—it can bring price transparency, dignity of labor, and environmental efficiency to the informal workers keeping our cities clean.
+---
 
-Next on our roadmap:
-- WhatsApp Business API integration for conversational voice-note photo submissions in Hindi.
-- Integration with Amazon Location Service live geofencing for real-time collector proximity alerts.
+## 7. What is next
 
-*Built with ❤️ by Team Omnivision for Environmental Hacks 2026.*
+- Real map and optimised routing with Amazon Location Service (today routing is a greedy nearest-neighbour estimate).
+- WhatsApp or voice-note photo submission in Hindi.
+- Verified e-waste drop-off partners.
+- Real sign-in (the demo uses a role picker only).
+
+*Built by Team Omnivision for Environmental Hacks 2026.*

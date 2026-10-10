@@ -127,7 +127,23 @@ def has_drop_off_only_items(items: List[Dict[str, Any]]) -> bool:
 
 
 def get_ewaste_drop_points() -> List[Dict[str, Any]]:
-    """Load e-waste drop-off points from seed file."""
+    """
+    Load e-waste drop-off points. In AWS these are read from DynamoDB (seed.py
+    stores them there), because the Lambda package does not include seed/.
+    Falls back to the local seed file for local runs and tests.
+    """
+    if os.environ.get("LISTINGS_TABLE"):  # set in Lambda; unset in local runs/tests
+        try:
+            try:
+                from common.db import get_ewaste_points_from_db
+            except ImportError:
+                from backend.common.db import get_ewaste_points_from_db
+            points = get_ewaste_points_from_db()
+            if points:
+                return sorted(points, key=lambda p: str(p.get("id", "")))
+        except Exception:
+            pass  # table unreachable: use the seed file below
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     candidates = [
         os.path.join(current_dir, "..", "..", "seed", "ewaste_points.json"),

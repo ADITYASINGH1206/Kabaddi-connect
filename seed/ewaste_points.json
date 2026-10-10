@@ -1,37 +1,51 @@
 [
   {
     "id": "ewaste-001",
-    "name": "Delhi Govt Authorised E-Waste Collection Facility",
-    "address": "Bawana Industrial Area, North West Delhi, Delhi 110039",
-    "lat": 28.7920,
-    "lng": 77.0530,
-    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
-    "phone": "+911126810011",
-    "instructions": "Safely drop off lead-acid batteries, CRT monitors, and chemical electronics. Do not dismantle.",
+    "name": "PLACEHOLDER: e-waste drop-off, Bawana area (unverified)",
+    "address": "Bawana Industrial Area, North West Delhi (area only, exact address not verified)",
+    "lat": 28.792,
+    "lng": 77.053,
+    "accepts": [
+      "ewaste_battery_or_crt",
+      "ewaste_phone",
+      "ewaste_laptop",
+      "ewaste_small_appliance"
+    ],
+    "phone": null,
+    "instructions": "Placeholder entry. Replace with a real, verified authorised facility before showing to users. Do not dismantle batteries or CRT monitors.",
     "verified": false,
     "note": "VERIFY BEFORE DEMO"
   },
   {
     "id": "ewaste-002",
-    "name": "Karo Sambhav Certified E-Waste Drop Point",
-    "address": "Rohini Sector 11, North West Delhi, Delhi 110085",
-    "lat": 28.7250,
-    "lng": 77.1150,
-    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop"],
-    "phone": "+911124601122",
-    "instructions": "Free public drop box for household consumer e-waste.",
+    "name": "PLACEHOLDER: e-waste drop-off, Rohini area (unverified)",
+    "address": "Rohini, North West Delhi (area only, exact address not verified)",
+    "lat": 28.725,
+    "lng": 77.115,
+    "accepts": [
+      "ewaste_battery_or_crt",
+      "ewaste_phone",
+      "ewaste_laptop"
+    ],
+    "phone": null,
+    "instructions": "Placeholder entry. Replace with a real, verified authorised facility before showing to users.",
     "verified": false,
     "note": "VERIFY BEFORE DEMO"
   },
   {
     "id": "ewaste-003",
-    "name": "CPCB Registered E-Waste Recycler (North Delhi)",
-    "address": "Narela Industrial Area, North Delhi, Delhi 110040",
-    "lat": 28.8200,
-    "lng": 77.0950,
-    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
-    "phone": "+911127011234",
-    "instructions": "Accepts bulk e-waste. Call ahead for drop-off timings. Government-registered facility.",
+    "name": "PLACEHOLDER: e-waste drop-off, Narela area (unverified)",
+    "address": "Narela Industrial Area, North Delhi (area only, exact address not verified)",
+    "lat": 28.82,
+    "lng": 77.095,
+    "accepts": [
+      "ewaste_battery_or_crt",
+      "ewaste_phone",
+      "ewaste_laptop",
+      "ewaste_small_appliance"
+    ],
+    "phone": null,
+    "instructions": "Placeholder entry. Replace with a real, verified authorised facility before showing to users.",
     "verified": false,
     "note": "VERIFY BEFORE DEMO"
   }

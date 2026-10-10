@@ -56,7 +56,6 @@ BASELINE_DATA = {
     "seeded_pickups_count": 34,
     "seeded_km_saved": 86.4,
     "seeded_ewaste_items": 12,
-    "seeded_mape_pct": 14.2,
 }
 
 
@@ -138,13 +137,16 @@ def lambda_handler(event, context):
         factor = factors.get(mat, 1.0)
         total_co2e_kg += kg * factor
 
-    # Average error pct
+    # Weight-estimation error: LIVE completed pickups only. The seeded baseline
+    # has no measured error, so it must not be blended into an accuracy figure.
     if live_error_count > 0:
-        avg_error = round((BASELINE_DATA["seeded_mape_pct"] + (total_live_error_sum / live_error_count)) / 2, 1)
+        avg_error = round(total_live_error_sum / live_error_count, 1)
     else:
-        avg_error = BASELINE_DATA["seeded_mape_pct"]
+        avg_error = None
 
-    km_saved = BASELINE_DATA["seeded_km_saved"] + (len(live_pickups) * 2.8)
+    # Route savings are not persisted per pickup, so live pickups add nothing here;
+    # this figure is the illustrative seeded baseline only.
+    km_saved = BASELINE_DATA["seeded_km_saved"]
 
     response = {
         "total_kg_diverted": round(total_kg_diverted, 1),
@@ -153,10 +155,11 @@ def lambda_handler(event, context):
         "pickups_completed": total_pickups,
         "live_pickups_count": len(live_pickups),
         "seeded_pickups_count": BASELINE_DATA["seeded_pickups_count"],
-        "trips_saved": int(total_pickups * 0.7),
         "km_saved": round(km_saved, 1),
+        "km_saved_is_demo_baseline": True,
         "ewaste_items_redirected": total_ewaste,
         "weight_estimation_mape_pct": avg_error,
+        "weight_estimation_sample_size": live_error_count,
         "co2e_avoided_kg": round(total_co2e_kg, 1),
         "emissionSource": "Illustrative estimate based on lifecycle recycling factors (config/emission_factors.json)",
         "is_stub": False,

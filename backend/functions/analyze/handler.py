@@ -11,6 +11,7 @@ import os
 import time
 from typing import Any, Dict, Optional
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 try:
@@ -40,8 +41,19 @@ DEFAULT_MODEL_ID = "apac.amazon.nova-lite-v1:0"
 DEFAULT_BEDROCK_REGION = "ap-south-1"
 
 
+# API Gateway HTTP APIs cut the request off at ~30 s. Bound each Bedrock call and
+# the total retry budget so a slow model returns the manual-entry fallback instead
+# of a gateway timeout.
+BEDROCK_CLIENT_CONFIG = Config(
+    connect_timeout=3,
+    read_timeout=15,
+    retries={"max_attempts": 1},  # we do our own bounded retries below
+)
+TOTAL_BUDGET_SECONDS = 25.0
+
+
 def get_bedrock_runtime_client(region_name: str):
-    return boto3.client("bedrock-runtime", region_name=region_name)
+    return boto3.client("bedrock-runtime", region_name=region_name, config=BEDROCK_CLIENT_CONFIG)
 
 
 def call_bedrock_converse_with_retries(
@@ -77,6 +89,7 @@ def call_bedrock_converse_with_retries(
 
     attempt = 0
     backoff_seconds = 1.0
+    started = time.monotonic()
 
     while attempt <= max_retries:
         try:
@@ -103,7 +116,8 @@ def call_bedrock_converse_with_retries(
 
             if error_code in ["ThrottlingException", "ModelNotReadyException", "TooManyRequestsException"]:
                 attempt += 1
-                if attempt <= max_retries:
+                out_of_time = (time.monotonic() - started) + backoff_seconds + BEDROCK_CLIENT_CONFIG.read_timeout > TOTAL_BUDGET_SECONDS
+                if attempt <= max_retries and not out_of_time:
                     logger.info(f"Throttled by Bedrock. Retrying in {backoff_seconds}s...")
                     time.sleep(backoff_seconds)
                     backoff_seconds *= 2.0

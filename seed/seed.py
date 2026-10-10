@@ -143,32 +143,66 @@ def seed_ewaste_points(dynamodb, table_name: str):
     return True
 
 
+LOGICAL_TO_ARG = {
+    "RatesTable": "rates_table",
+    "CollectorsTable": "collectors_table",
+    "ListingsTable": "listings_table",
+    "PickupsTable": "pickups_table",
+}
+
+
+def resolve_tables_from_stack(region: str, stack_name: str) -> dict:
+    """
+    SAM generates table names such as "kabadiconnect-RatesTable-1I58...", so the
+    old hard-coded defaults never match a real deployment. Look the names up from
+    the CloudFormation stack instead. Returns {} if the stack cannot be read.
+    """
+    try:
+        cfn = boto3.client("cloudformation", region_name=region)
+        resolved = {}
+        paginator = cfn.get_paginator("list_stack_resources")
+        for page in paginator.paginate(StackName=stack_name):
+            for res in page["StackResourceSummaries"]:
+                arg = LOGICAL_TO_ARG.get(res["LogicalResourceId"])
+                if arg and res["ResourceType"] == "AWS::DynamoDB::Table":
+                    resolved[arg] = res["PhysicalResourceId"]
+        return resolved
+    except Exception as e:
+        print(f"  Warning: could not read stack '{stack_name}' in {region}: {e}", file=sys.stderr)
+        return {}
+
+
 def main():
     parser = argparse.ArgumentParser(description="Seed DynamoDB tables for KabadiConnect")
     parser.add_argument(
         "--rates-table",
-        default=os.environ.get("RATES_TABLE", "KabadiConnect-Rates-dev"),
+        default=os.environ.get("RATES_TABLE"),
         help="Name of the Rates DynamoDB table"
     )
     parser.add_argument(
         "--collectors-table",
-        default=os.environ.get("COLLECTORS_TABLE", "KabadiConnect-Collectors-dev"),
+        default=os.environ.get("COLLECTORS_TABLE"),
         help="Name of the Collectors DynamoDB table"
     )
     parser.add_argument(
         "--listings-table",
-        default=os.environ.get("LISTINGS_TABLE", "KabadiConnect-Listings-dev"),
+        default=os.environ.get("LISTINGS_TABLE"),
         help="Name of the Listings DynamoDB table"
     )
     parser.add_argument(
         "--pickups-table",
-        default=os.environ.get("PICKUPS_TABLE", "KabadiConnect-Pickups-dev"),
+        default=os.environ.get("PICKUPS_TABLE"),
         help="Name of the Pickups DynamoDB table"
     )
     parser.add_argument(
         "--region",
-        default=os.environ.get("AWS_REGION", "ap-south-1"),
-        help="AWS Region (default: ap-south-1)"
+        default=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "ap-south-1",
+        help="AWS Region of the deployed stack (default: $AWS_REGION, else ap-south-1)"
+    )
+    parser.add_argument(
+        "--stack-name",
+        default=os.environ.get("STACK_NAME", "kabadiconnect"),
+        help="CloudFormation stack used to look up table names when they are not given"
     )
     parser.add_argument(
         "--reset",
@@ -177,8 +211,26 @@ def main():
     )
     args = parser.parse_args()
 
+    missing = [a for a in LOGICAL_TO_ARG.values() if getattr(args, a) is None]
+    if missing:
+        resolved = resolve_tables_from_stack(args.region, args.stack_name)
+        for a in missing:
+            if a in resolved:
+                setattr(args, a, resolved[a])
+    still_missing = [a for a in LOGICAL_TO_ARG.values() if getattr(args, a) is None]
+    if still_missing:
+        print(
+            f"Error: could not determine table names for {still_missing} in region {args.region}.\n"
+            f"Check --region and --stack-name ({args.stack_name}), or pass --rates-table etc. explicitly.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     dynamodb = boto3.resource("dynamodb", region_name=args.region)
-    print(f"Seeding KabadiConnect tables (region: {args.region})...\n")
+    print(f"Seeding KabadiConnect tables (region: {args.region}, stack: {args.stack_name})...")
+    for a in LOGICAL_TO_ARG.values():
+        print(f"  {a}: {getattr(args, a)}")
+    print()
 
     if args.reset:
         print("=== RESET MODE: Clearing tables ===")
