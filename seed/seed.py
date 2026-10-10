@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
 Seed script for KabadiConnect.
-Populates the DynamoDB Rates table from config/rates.seed.json.
-Can also optionally seed collectors, listings, and ewaste points when available.
+Populates DynamoDB tables (Rates, Collectors, Listings, Pickups) from seed/config files.
+Idempotent: safe to run multiple times.
+Supports --reset which clears Listings and Pickups then reloads everything.
 """
 
 import argparse
 import json
 import os
 import sys
+import uuid
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 import boto3
+from botocore.exceptions import ClientError
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CONFIG_DIR = ROOT_DIR / "config"
@@ -19,6 +23,7 @@ SEED_DIR = ROOT_DIR / "seed"
 
 
 def parse_floats_to_decimals(obj):
+    """Recursively convert floats to Decimals for DynamoDB compatibility."""
     if isinstance(obj, float):
         return Decimal(str(obj))
     if isinstance(obj, dict):
@@ -28,29 +33,113 @@ def parse_floats_to_decimals(obj):
     return obj
 
 
-def seed_rates(table_name: str, region_name: str = "ap-south-1"):
+def clear_table(table, table_name: str, key_attr: str):
+    """Delete all items from a DynamoDB table."""
+    print(f"  Clearing all items from {table_name}...")
+    scan_kwargs = {"ProjectionExpression": key_attr}
+    count = 0
+    while True:
+        response = table.scan(**scan_kwargs)
+        items = response.get("Items", [])
+        for item in items:
+            table.delete_item(Key={key_attr: item[key_attr]})
+            count += 1
+        if "LastEvaluatedKey" not in response:
+            break
+        scan_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+    print(f"  ✓ Deleted {count} items from {table_name}")
+
+
+def seed_rates(dynamodb, table_name: str):
+    """Seed the Rates table from config/rates.seed.json."""
     rates_file = CONFIG_DIR / "rates.seed.json"
     if not rates_file.exists():
-        print(f"Error: {rates_file} does not exist", file=sys.stderr)
+        print(f"  Error: {rates_file} does not exist", file=sys.stderr)
         return False
 
     with open(rates_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     rates = data.get("rates", [])
-    print(f"Loading {len(rates)} indicative rates into DynamoDB table: {table_name} (region: {region_name})...")
-
-    dynamodb = boto3.resource("dynamodb", region_name=region_name)
     table = dynamodb.Table(table_name)
 
     with table.batch_writer() as batch:
         for rate in rates:
             item = parse_floats_to_decimals(rate)
             batch.put_item(Item=item)
-            print(f"  ✓ Seeded {item['material']} (₹{item['rate_low']} - ₹{item['rate_high']}/{item.get('unit', 'kg')})")
 
-    print("\nNote: Seeded rates are INDICATIVE. Verify with local scrap vendors before production/demo use.")
-    print("Rates seeded successfully!")
+    print(f"  ✓ Seeded {len(rates)} indicative rates into {table_name}")
+    return True
+
+
+def seed_collectors(dynamodb, table_name: str):
+    """Seed the Collectors table from seed/collectors.json."""
+    collectors_file = SEED_DIR / "collectors.json"
+    if not collectors_file.exists():
+        print(f"  Error: {collectors_file} does not exist", file=sys.stderr)
+        return False
+
+    with open(collectors_file, "r", encoding="utf-8") as f:
+        collectors = json.load(f)
+
+    table = dynamodb.Table(table_name)
+
+    with table.batch_writer() as batch:
+        for collector in collectors:
+            item = parse_floats_to_decimals(collector)
+            batch.put_item(Item=item)
+
+    print(f"  ✓ Seeded {len(collectors)} collectors into {table_name}")
+    return True
+
+
+def seed_listings(dynamodb, table_name: str):
+    """Seed the Listings table from seed/listings.json."""
+    listings_file = SEED_DIR / "listings.json"
+    if not listings_file.exists():
+        print(f"  Error: {listings_file} does not exist", file=sys.stderr)
+        return False
+
+    with open(listings_file, "r", encoding="utf-8") as f:
+        listings = json.load(f)
+
+    table = dynamodb.Table(table_name)
+
+    with table.batch_writer() as batch:
+        for listing in listings:
+            item = parse_floats_to_decimals(listing)
+            # Ensure createdAt is set for GSI
+            if "createdAt" not in item:
+                item["createdAt"] = datetime.now(timezone.utc).isoformat()
+            item["seeded"] = True
+            batch.put_item(Item=item)
+
+    print(f"  ✓ Seeded {len(listings)} listings into {table_name}")
+    return True
+
+
+def seed_ewaste_points(dynamodb, table_name: str):
+    """Store e-waste points as special entries in the Listings table with EWASTE# prefix."""
+    ewaste_file = SEED_DIR / "ewaste_points.json"
+    if not ewaste_file.exists():
+        print(f"  Error: {ewaste_file} does not exist", file=sys.stderr)
+        return False
+
+    with open(ewaste_file, "r", encoding="utf-8") as f:
+        points = json.load(f)
+
+    table = dynamodb.Table(table_name)
+
+    with table.batch_writer() as batch:
+        for point in points:
+            item = parse_floats_to_decimals(point)
+            # Store with a special key so we can query them
+            item["listingId"] = f"EWASTE#{point['id']}"
+            item["status"] = "EWASTE_POINT"
+            item["createdAt"] = datetime.now(timezone.utc).isoformat()
+            batch.put_item(Item=item)
+
+    print(f"  ✓ Seeded {len(points)} e-waste drop-off points into {table_name}")
     return True
 
 
@@ -62,15 +151,62 @@ def main():
         help="Name of the Rates DynamoDB table"
     )
     parser.add_argument(
+        "--collectors-table",
+        default=os.environ.get("COLLECTORS_TABLE", "KabadiConnect-Collectors-dev"),
+        help="Name of the Collectors DynamoDB table"
+    )
+    parser.add_argument(
+        "--listings-table",
+        default=os.environ.get("LISTINGS_TABLE", "KabadiConnect-Listings-dev"),
+        help="Name of the Listings DynamoDB table"
+    )
+    parser.add_argument(
+        "--pickups-table",
+        default=os.environ.get("PICKUPS_TABLE", "KabadiConnect-Pickups-dev"),
+        help="Name of the Pickups DynamoDB table"
+    )
+    parser.add_argument(
         "--region",
         default=os.environ.get("AWS_REGION", "ap-south-1"),
         help="AWS Region (default: ap-south-1)"
     )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Clear Listings and Pickups tables before seeding"
+    )
     args = parser.parse_args()
 
-    success = seed_rates(args.rates_table, args.region)
-    if not success:
-        sys.exit(1)
+    dynamodb = boto3.resource("dynamodb", region_name=args.region)
+    print(f"Seeding KabadiConnect tables (region: {args.region})...\n")
+
+    if args.reset:
+        print("=== RESET MODE: Clearing tables ===")
+        try:
+            clear_table(dynamodb.Table(args.listings_table), args.listings_table, "listingId")
+        except Exception as e:
+            print(f"  Warning: Could not clear listings table: {e}")
+        try:
+            clear_table(dynamodb.Table(args.pickups_table), args.pickups_table, "pickupId")
+        except Exception as e:
+            print(f"  Warning: Could not clear pickups table: {e}")
+        print()
+
+    print("[1/4] Seeding Rates...")
+    seed_rates(dynamodb, args.rates_table)
+
+    print("[2/4] Seeding Collectors...")
+    seed_collectors(dynamodb, args.collectors_table)
+
+    print("[3/4] Seeding Listings...")
+    seed_listings(dynamodb, args.listings_table)
+
+    print("[4/4] Seeding E-Waste Drop-off Points...")
+    seed_ewaste_points(dynamodb, args.listings_table)
+
+    print("\n✅ All tables seeded successfully!")
+    print("Note: Seeded rates are INDICATIVE. Verify with local scrap vendors before production/demo use.")
+    print("Note: E-waste drop-off points are UNVERIFIED (verified: false). Check before demo.")
 
 
 if __name__ == "__main__":

@@ -222,7 +222,7 @@ Resources:
             Path: /analyze
             Method: POST
 
-  # Lambda: GET /rates and Listings stubs
+  # Lambda: /rates, /listings, and /listings/{id}/accept
   ListingsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -236,9 +236,12 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:GetItem
                 - dynamodb:PutItem
+                - dynamodb:UpdateItem
               Resource:
                 - !GetAtt ListingsTable.Arn
                 - !GetAtt RatesTable.Arn
+                - !GetAtt CollectorsTable.Arn
+                - !GetAtt PickupsTable.Arn
                 - !Sub '${ListingsTable.Arn}/index/*'
       Events:
         RatesApi:
@@ -259,8 +262,94 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /listings/{id}
             Method: GET
+        ListingsAcceptApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /listings/{id}/accept
+            Method: POST
 
-  # Lambda: GET /impact (aggregates stub for M0/M1)
+  # Lambda: /collectors, /collectors/{id}/requests, /collectors/{id}/route
+  CollectorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.collectors.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+                - dynamodb:Query
+                - dynamodb:GetItem
+              Resource:
+                - !GetAtt CollectorsTable.Arn
+                - !GetAtt ListingsTable.Arn
+                - !GetAtt RatesTable.Arn
+                - !GetAtt PickupsTable.Arn
+                - !Sub '${ListingsTable.Arn}/index/*'
+                - !Sub '${PickupsTable.Arn}/index/*'
+      Events:
+        CollectorsListApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /collectors
+            Method: GET
+        CollectorsRequestsApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /collectors/{id}/requests
+            Method: GET
+        CollectorsRouteApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /collectors/{id}/route
+            Method: POST
+
+  # Lambda: /pickups/{id}/complete, /pickups/{id}, /pickups
+  PickupsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: functions.pickups.handler.lambda_handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+                - dynamodb:Query
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt PickupsTable.Arn
+                - !GetAtt ListingsTable.Arn
+                - !GetAtt RatesTable.Arn
+                - !Sub '${PickupsTable.Arn}/index/*'
+      Events:
+        PickupsCompleteApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /pickups/{id}/complete
+            Method: POST
+        PickupsGetApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /pickups/{id}
+            Method: GET
+        PickupsListApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /pickups
+            Method: GET
+
+  # Lambda: GET /impact
   ImpactFunction:
     Type: AWS::Serverless::Function
     Properties:

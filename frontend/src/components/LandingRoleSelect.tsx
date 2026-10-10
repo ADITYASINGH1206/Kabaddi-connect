@@ -89,6 +89,29 @@ export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
             <span>Geo-clustered pickups &bull; Waypoint route optimizer</span>
           </div>
         </button>
+
+        {/* Role 3: Public Impact Dashboard */}
+        <button
+          onClick={() => onSelectRole('impact')}
+          className="w-full text-left p-4 rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-800/20 border border-slate-700/60 hover:border-sky-500/60 shadow-lg hover:shadow-sky-500/10 transition-all duration-200 active:scale-[0.99] group cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
+                  {t.roleImpact}
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  {t.roleImpactSub}
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </button>
       </div>
 
       <div className="mt-8 text-center text-xs text-slate-500 px-4">

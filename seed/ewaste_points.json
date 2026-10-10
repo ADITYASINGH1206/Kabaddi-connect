@@ -2,21 +2,37 @@
   {
     "id": "ewaste-001",
     "name": "Delhi Govt Authorised E-Waste Collection Facility",
-    "address": "Okhla Industrial Area Phase 1, New Delhi, Delhi 110020",
-    "lat": 28.5305,
-    "lng": 77.2798,
+    "address": "Bawana Industrial Area, North West Delhi, Delhi 110039",
+    "lat": 28.7920,
+    "lng": 77.0530,
     "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
     "phone": "+911126810011",
-    "instructions": "Safely drop off lead-acid batteries, CRT monitors, and chemical electronics. Do not dismantle."
+    "instructions": "Safely drop off lead-acid batteries, CRT monitors, and chemical electronics. Do not dismantle.",
+    "verified": false,
+    "note": "VERIFY BEFORE DEMO"
   },
   {
     "id": "ewaste-002",
     "name": "Karo Sambhav Certified E-Waste Drop Point",
-    "address": "South Extension Part II, New Delhi, Delhi 110049",
-    "lat": 28.5684,
-    "lng": 77.2217,
+    "address": "Rohini Sector 11, North West Delhi, Delhi 110085",
+    "lat": 28.7250,
+    "lng": 77.1150,
     "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop"],
     "phone": "+911124601122",
-    "instructions": "Free public drop box for household consumer e-waste."
+    "instructions": "Free public drop box for household consumer e-waste.",
+    "verified": false,
+    "note": "VERIFY BEFORE DEMO"
+  },
+  {
+    "id": "ewaste-003",
+    "name": "CPCB Registered E-Waste Recycler (North Delhi)",
+    "address": "Narela Industrial Area, North Delhi, Delhi 110040",
+    "lat": 28.8200,
+    "lng": 77.0950,
+    "accepts": ["ewaste_battery_or_crt", "ewaste_phone", "ewaste_laptop", "ewaste_small_appliance"],
+    "phone": "+911127011234",
+    "instructions": "Accepts bulk e-waste. Call ahead for drop-off timings. Government-registered facility.",
+    "verified": false,
+    "note": "VERIFY BEFORE DEMO"
   }
 ]
