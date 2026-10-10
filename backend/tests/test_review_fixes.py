@@ -103,6 +103,29 @@ class ImpactHonestyTests(unittest.TestCase):
         self.assertEqual(body["weight_estimation_sample_size"], 2)
         self.assertEqual(body["live_pickups_count"], 2)
 
+    def test_seeded_pickups_do_not_feed_accuracy_and_split_metrics(self):
+        records = [
+            # Seeded demo pickup with an error
+            {"status": "COMPLETED", "payout": Decimal("500"), "estimateErrorPct": Decimal("8.5"),
+             "seeded": True, "actualItems": [{"material": "newspaper_paper", "actual_kg": Decimal("25")}]},
+            # Live pickup with an error
+            {"status": "COMPLETED", "payout": Decimal("120"), "estimateErrorPct": Decimal("5.0"),
+             "seeded": False, "actualItems": [{"material": "cardboard", "actual_kg": Decimal("10")}]},
+        ]
+        body = self._run(records)
+        self.assertEqual(body["seeded_pickups_count"], 1)
+        self.assertEqual(body["live_pickups_count"], 1)
+        self.assertEqual(body["pickups_completed"], 2)
+        self.assertEqual(body["seeded_payout_inr"], 500.0)
+        self.assertEqual(body["live_payout_inr"], 120.0)
+        self.assertEqual(body["collector_income_facilitated_inr"], 620.0)
+        self.assertEqual(body["seeded_kg_diverted"], 25.0)
+        self.assertEqual(body["live_kg_diverted"], 10.0)
+        self.assertEqual(body["total_kg_diverted"], 35.0)
+        # Crucial honesty rule: only live error (5.0%) is used, seeded (8.5%) is ignored
+        self.assertEqual(body["weight_estimation_mape_pct"], 5.0)
+        self.assertEqual(body["weight_estimation_sample_size"], 1)
+
 
 class SeedTableLookupTests(unittest.TestCase):
     def _load_seed(self):

@@ -11,7 +11,7 @@ import json
 import os
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from pathlib import Path
 import boto3
@@ -20,6 +20,23 @@ from botocore.exceptions import ClientError
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CONFIG_DIR = ROOT_DIR / "config"
 SEED_DIR = ROOT_DIR / "seed"
+
+# Ensure backend modules can be imported
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+if str(ROOT_DIR / "backend") not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR / "backend"))
+
+try:
+    from backend.common.schema import calculate_price_estimate
+    from backend.common.matching import match_collectors
+except ImportError:
+    try:
+        from common.schema import calculate_price_estimate
+        from common.matching import match_collectors
+    except ImportError:
+        calculate_price_estimate = None
+        match_collectors = None
 
 
 def parse_floats_to_decimals(obj):
@@ -86,16 +103,20 @@ def seed_collectors(dynamodb, table_name: str):
 
     with table.batch_writer() as batch:
         for collector in collectors:
-            item = parse_floats_to_decimals(collector)
-            batch.put_item(Item=item)
+            item = dict(collector)
+            item["seeded"] = True
+            batch.put_item(Item=parse_floats_to_decimals(item))
 
     print(f"  ✓ Seeded {len(collectors)} collectors into {table_name}")
     return True
 
 
 def seed_listings(dynamodb, table_name: str):
-    """Seed the Listings table from seed/listings.json."""
+    """Seed the Listings table from seed/listings.json with relative dates and validated estimates/matches."""
     listings_file = SEED_DIR / "listings.json"
+    rates_file = CONFIG_DIR / "rates.seed.json"
+    collectors_file = SEED_DIR / "collectors.json"
+
     if not listings_file.exists():
         print(f"  Error: {listings_file} does not exist", file=sys.stderr)
         return False
@@ -103,16 +124,53 @@ def seed_listings(dynamodb, table_name: str):
     with open(listings_file, "r", encoding="utf-8") as f:
         listings = json.load(f)
 
+    rates_map = {}
+    if rates_file.exists():
+        with open(rates_file, "r", encoding="utf-8") as f:
+            rates_map = {r["material"]: r for r in json.load(f).get("rates", [])}
+
+    collectors = []
+    if collectors_file.exists():
+        with open(collectors_file, "r", encoding="utf-8") as f:
+            collectors = json.load(f)
+
     table = dynamodb.Table(table_name)
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    tomorrow = today + timedelta(days=1)
 
     with table.batch_writer() as batch:
-        for listing in listings:
-            item = parse_floats_to_decimals(listing)
-            # Ensure createdAt is set for GSI
-            if "createdAt" not in item:
-                item["createdAt"] = datetime.now(timezone.utc).isoformat()
+        for i, listing in enumerate(listings):
+            item = dict(listing)
+            items = item.get("items", [])
+
+            # Compute estimate dynamically from rates if helper is available
+            if calculate_price_estimate and rates_map:
+                p_low, p_high = calculate_price_estimate(items, rates_map)
+                item["estimate"] = {"price_low": p_low, "price_high": p_high}
+            elif "estimate" not in item:
+                item["estimate"] = {"price_low": 0.0, "price_high": 0.0}
+
+            # Match collectors dynamically if helper is available
+            if match_collectors and collectors:
+                p_low = float(item["estimate"].get("price_low", 0))
+                p_high = float(item["estimate"].get("price_high", 0))
+                mid = (p_low + p_high) / 2.0
+                m_res = match_collectors(items, float(item.get("lat", 0)), float(item.get("lng", 0)), mid, collectors)
+                item["matchedCollectorIds"] = m_res.get("matchedCollectorIds", [])
+
+            # Generate relative dates so listings look fresh
+            created_dt = now - timedelta(hours=min(12, i * 0.8))
+            item["createdAt"] = created_dt.isoformat()
+
+            # Set pickupWindow relative to today/tomorrow
+            slot_date = str(today) if i % 2 == 0 else str(tomorrow)
+            pw = item.get("pickupWindow", {})
+            pw["preferredDate"] = slot_date
+            item["pickupWindow"] = pw
+
             item["seeded"] = True
-            batch.put_item(Item=item)
+            batch.put_item(Item=parse_floats_to_decimals(item))
 
     print(f"  ✓ Seeded {len(listings)} listings into {table_name}")
     return True
@@ -133,13 +191,80 @@ def seed_ewaste_points(dynamodb, table_name: str):
     with table.batch_writer() as batch:
         for point in points:
             item = parse_floats_to_decimals(point)
-            # Store with a special key so we can query them
             item["listingId"] = f"EWASTE#{point['id']}"
             item["status"] = "EWASTE_POINT"
             item["createdAt"] = datetime.now(timezone.utc).isoformat()
+            item["seeded"] = True
             batch.put_item(Item=item)
 
     print(f"  ✓ Seeded {len(points)} e-waste drop-off points into {table_name}")
+    return True
+
+
+def seed_pickups_history(dynamodb, table_name: str):
+    """Seed Pickups table with completed history and active accepted pickups."""
+    history_file = SEED_DIR / "pickups_history.json"
+    rates_file = CONFIG_DIR / "rates.seed.json"
+
+    if not history_file.exists():
+        print(f"  Warning: {history_file} does not exist, skipping pickups seeding", file=sys.stderr)
+        return False
+
+    with open(history_file, "r", encoding="utf-8") as f:
+        pickups = json.load(f)
+
+    rates_map = {}
+    if rates_file.exists():
+        with open(rates_file, "r", encoding="utf-8") as f:
+            rates_map = {r["material"]: r for r in json.load(f).get("rates", [])}
+
+    table = dynamodb.Table(table_name)
+    now = datetime.now(timezone.utc)
+
+    with table.batch_writer() as batch:
+        for i, pickup in enumerate(pickups):
+            item = dict(pickup)
+            status = item.get("status", "COMPLETED")
+
+            if status == "COMPLETED":
+                # Recalculate relative dates over last 7 days
+                days_ago = min(6, (i % 6) + 1)
+                comp_dt = now - timedelta(days=days_ago, hours=3)
+                acc_dt = comp_dt - timedelta(hours=2)
+                item["completedAt"] = comp_dt.isoformat()
+                item["acceptedAt"] = acc_dt.isoformat()
+
+                # Recompute payout and estimateErrorPct dynamically
+                actual_items = item.get("actualItems", [])
+                payout = 0.0
+                actual_total_kg = 0.0
+                for act in actual_items:
+                    mat = act.get("material", "")
+                    kg = float(act.get("actual_kg", 0))
+                    actual_total_kg += kg
+                    rate = rates_map.get(mat, {})
+                    mid_rate = (float(rate.get("rate_low", 0)) + float(rate.get("rate_high", 0))) / 2.0
+                    payout += kg * mid_rate
+
+                est_items = item.get("items", [])
+                est_mid_total = sum((float(it.get("weight_kg_low", 0)) + float(it.get("weight_kg_high", 0))) / 2.0 for it in est_items)
+                if actual_total_kg > 0:
+                    err_pct = round(abs(actual_total_kg - est_mid_total) / actual_total_kg * 100.0, 1)
+                else:
+                    err_pct = 0.0
+
+                item["payout"] = round(payout, 2)
+                item["estimateErrorPct"] = err_pct
+
+            elif status == "ACCEPTED":
+                # Relative acceptedAt within the last 3 hours
+                acc_dt = now - timedelta(hours=1, minutes=(i * 20))
+                item["acceptedAt"] = acc_dt.isoformat()
+
+            item["seeded"] = True
+            batch.put_item(Item=parse_floats_to_decimals(item))
+
+    print(f"  ✓ Seeded {len(pickups)} pickups into {table_name}")
     return True
 
 
@@ -196,8 +321,8 @@ def main():
     )
     parser.add_argument(
         "--region",
-        default=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "ap-south-1",
-        help="AWS Region of the deployed stack (default: $AWS_REGION, else ap-south-1)"
+        default=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "ap-southeast-2",
+        help="AWS Region of the deployed stack (default: $AWS_REGION, else ap-southeast-2)"
     )
     parser.add_argument(
         "--stack-name",
@@ -244,17 +369,20 @@ def main():
             print(f"  Warning: Could not clear pickups table: {e}")
         print()
 
-    print("[1/4] Seeding Rates...")
+    print("[1/5] Seeding Rates...")
     seed_rates(dynamodb, args.rates_table)
 
-    print("[2/4] Seeding Collectors...")
+    print("[2/5] Seeding Collectors...")
     seed_collectors(dynamodb, args.collectors_table)
 
-    print("[3/4] Seeding Listings...")
+    print("[3/5] Seeding Listings...")
     seed_listings(dynamodb, args.listings_table)
 
-    print("[4/4] Seeding E-Waste Drop-off Points...")
+    print("[4/5] Seeding E-Waste Drop-off Points...")
     seed_ewaste_points(dynamodb, args.listings_table)
+
+    print("[5/5] Seeding Pickups History & Active Pickups...")
+    seed_pickups_history(dynamodb, args.pickups_table)
 
     print("\n✅ All tables seeded successfully!")
     print("Note: Seeded rates are INDICATIVE. Verify with local scrap vendors before production/demo use.")

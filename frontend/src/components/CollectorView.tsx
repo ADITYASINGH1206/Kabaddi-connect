@@ -89,8 +89,15 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
     setLoadingRequests(true);
     setRequestError(null);
     try {
-      const data = await ApiClient.getCollectorRequests(colId);
-      setRequests(data);
+      const data: any = await ApiClient.getCollectorRequests(colId);
+      const list = Array.isArray(data) ? data : (data?.requests || []);
+      const normalized = list.map((item: any) => ({
+        ...item,
+        estimated_value_mid: item.estimated_value_mid ?? (item.estimatedValue ? Math.round((item.estimatedValue.low + item.estimatedValue.high) / 2) : 0),
+        total_kg_range: item.total_kg_range ?? item.kgRange ?? { low: 0, high: 0 },
+        seeded: item.seeded ?? false,
+      }));
+      setRequests(normalized);
     } catch (err: any) {
       console.warn('Failed to load collector requests:', err);
       setRequestError(err.message || 'Could not fetch requests');
@@ -334,6 +341,11 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
                       <span className="text-xs font-bold text-white">
                         {req.sellerName || 'Household'}
                       </span>
+                      {req.seeded && (
+                        <span className="text-[9px] bg-amber-500/15 text-amber-300 px-1.5 py-0.5 rounded font-semibold border border-amber-500/30 tracking-wide uppercase">
+                          {lang === 'hi' ? 'डेमो' : 'Demo'}
+                        </span>
+                      )}
                       {req.worthIt ? (
                         <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">
                           {t.worthItTag}

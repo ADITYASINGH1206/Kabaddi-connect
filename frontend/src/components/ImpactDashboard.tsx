@@ -204,9 +204,14 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang, onBack }
 
           {/* Footnote / Demo Baseline Label */}
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-              <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>{t.includesDemoData}</span>
+            <div className="flex items-center justify-between text-slate-300 font-semibold">
+              <div className="flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>{t.includesDemoData}</span>
+              </div>
+              <span className="text-[10px] text-amber-300/90 font-mono bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                {stats.seeded_pickups_count ?? 0} {lang === 'hi' ? 'डेमो' : 'demo'} + {stats.live_pickups_count ?? 0} {lang === 'hi' ? 'लाइव' : 'live'}
+              </span>
             </div>
             <p className="leading-relaxed">
               {stats.emissionSource} — {t.co2Footnote}
