@@ -66,7 +66,7 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang }) => {
     : [];
 
   return (
-    <Page className="gap-5">
+    <Page className="gap-5 lg:pt-8">
       <div>
         <h1 className="font-display text-3xl leading-tight">{t.impactTitle}</h1>
         <p className="mt-1.5 text-base text-muted">{t.impactSubtitle}</p>
@@ -87,7 +87,7 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang }) => {
           {/* Headline: kilos, as a weighing-scale readout */}
           <section className="rounded-md border-2 border-ink bg-ink p-5 text-white">
             <p className="text-base font-semibold text-white/80">{t.totalKgDiverted}</p>
-            <p className="font-display text-6xl leading-none tabular-nums text-sun">
+            <p className="font-display text-6xl leading-none tabular-nums text-sun lg:text-8xl">
               {stats.total_kg_diverted.toLocaleString('en-IN')}
               <span className="ml-2 text-3xl text-white">{t.kg}</span>
             </p>
@@ -98,6 +98,7 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang }) => {
             </p>
           </section>
 
+          <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-x-12">
           {/* Ledger */}
           <section>
             <h2 className="mb-1 font-display text-2xl">{t.ledgerTitle}</h2>
@@ -114,6 +115,7 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang }) => {
             </dl>
           </section>
 
+          <div className="flex flex-col gap-5">
           {/* Materials */}
           {sortedMaterials.length > 0 && (
             <section>
@@ -152,11 +154,14 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang }) => {
             </p>
           </section>
 
+          </div>
+          </div>
+
           <p className="text-sm text-muted">
             {stats.emissionSource} — {t.co2Footnote}
           </p>
 
-          <button onClick={fetchImpact} className={`${btnGhost} w-full`}>
+          <button onClick={fetchImpact} className={`${btnGhost} w-full lg:w-auto lg:self-start`}>
             <RefreshCw className="h-5 w-5" aria-hidden />
             {t.refreshImpact}
           </button>

@@ -128,7 +128,8 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
   ] as const;
 
   return (
-    <Page className="gap-5">
+    <Page className="gap-5 lg:grid lg:grid-cols-[20rem_1fr] lg:items-start lg:gap-x-14 lg:pt-10">
+      <div className="flex flex-col gap-5 lg:sticky lg:top-20">
       <div>
         <h1 className="font-display text-3xl leading-tight">{t.pickupDetailsTitle}</h1>
         <p className="mt-1.5 text-base text-muted">{t.pickupDetailsSubtitle}</p>
@@ -146,7 +147,9 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
           {inr(priceRange.low)} – {inr(priceRange.high)}
         </p>
       </section>
+      </div>
 
+      <div className="flex flex-col gap-5">
       {errorMsg && <Notice tone="error">{errorMsg}</Notice>}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -296,6 +299,7 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
           </button>
         </div>
       </form>
+      </div>
     </Page>
   );
 };

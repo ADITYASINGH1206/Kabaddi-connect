@@ -25,7 +25,7 @@ export const Page: React.FC<{ children: React.ReactNode; className?: string }> =
   children,
   className = '',
 }) => (
-  <div className={`mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-10 pt-5 ${className}`}>
+  <div className={`mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pb-10 pt-5 lg:max-w-5xl lg:px-8 ${className}`}>
     {children}
   </div>
 );
@@ -58,7 +58,7 @@ export const Notice: React.FC<{
 /* ---------- step indicator (household flow is a real sequence) ---------- */
 
 export const StepBar: React.FC<{ labels: string[]; current: number }> = ({ labels, current }) => (
-  <ol className="mx-auto flex w-full max-w-lg items-center gap-1 px-4 pt-4" aria-label="Progress">
+  <ol className="mx-auto flex w-full max-w-lg items-center gap-1 px-4 pt-4 lg:max-w-5xl lg:px-8 lg:pt-6" aria-label="Progress">
     {labels.map((label, i) => {
       const state = i < current ? 'done' : i === current ? 'now' : 'next';
       return (

@@ -19,13 +19,13 @@ export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
   const board = rates.filter((r) => !r.hazardous).slice(0, 7);
 
   return (
-    <Page className="gap-6">
-      <h1 className="font-display text-[2rem] leading-[1.15] text-balance">{t.landingHeadline}</h1>
+    <Page className="gap-6 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:pt-12">
+      <h1 className="font-display text-[2rem] leading-[1.15] text-balance lg:col-start-1 lg:text-5xl">{t.landingHeadline}</h1>
 
       {/* The rate board: the thing every kabadiwala keeps in his head, written down */}
       <section
         aria-labelledby="rate-board"
-        className="board-in overflow-hidden rounded-md border-2 border-ink bg-sun"
+        className="board-in overflow-hidden rounded-md border-2 border-ink bg-sun lg:col-start-2 lg:row-span-2 lg:row-start-1"
       >
         <div className="flex items-baseline justify-between border-b-2 border-ink px-4 py-2">
           <h2 id="rate-board" className="font-display text-xl">
@@ -52,7 +52,7 @@ export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
         <p className="border-t-2 border-ink px-4 py-2 text-sm">{t.rateBoardNote}</p>
       </section>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 lg:col-start-1">
         <p className="text-base font-semibold text-muted">{t.rolePrompt}</p>
 
         <button

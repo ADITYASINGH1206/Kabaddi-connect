@@ -15,7 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ lang, onToggleLang, role, onRese
 
   return (
     <header className="sticky top-0 z-40 border-b-4 border-sun bg-ink text-white">
-      <div className="mx-auto flex h-14 w-full max-w-lg items-center justify-between gap-2 px-2">
+      <div className="mx-auto flex h-14 w-full max-w-lg items-center justify-between gap-2 px-2 lg:max-w-5xl lg:px-6">
         <div className="flex min-w-0 items-center">
           {role && (
             <button

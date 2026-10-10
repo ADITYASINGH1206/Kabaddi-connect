@@ -64,7 +64,8 @@ export const MatchedView: React.FC<MatchedViewProps> = ({ lang, initialData, onR
   const accepted = status === 'ACCEPTED' ? listing?.acceptedCollector : undefined;
 
   return (
-    <Page className="gap-5">
+    <Page className="gap-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:pt-10">
+      <div className="flex flex-col gap-5">
       {/* Status */}
       <section className={`rounded-md border-2 p-5 ${tone}`} aria-live="polite">
         <div className="flex items-start gap-4">
@@ -157,6 +158,9 @@ export const MatchedView: React.FC<MatchedViewProps> = ({ lang, initialData, onR
         </Notice>
       )}
 
+      </div>
+
+      <div className="flex flex-col gap-5">
       {/* Matched collectors */}
       <section>
         <h2 className="mb-2 font-display text-2xl">
@@ -200,6 +204,7 @@ export const MatchedView: React.FC<MatchedViewProps> = ({ lang, initialData, onR
         <RefreshCw className="h-5 w-5" aria-hidden />
         {t.newRequest}
       </button>
+      </div>
     </Page>
   );
 };
