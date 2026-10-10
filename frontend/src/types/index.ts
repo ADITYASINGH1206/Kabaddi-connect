@@ -173,6 +173,7 @@ export interface CollectorRequestItem {
   worthIt: boolean;
   score: number;
   createdAt?: string;
+  seeded?: boolean;
 }
 
 export interface RouteStop {

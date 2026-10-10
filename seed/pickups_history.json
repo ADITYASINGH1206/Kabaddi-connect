@@ -1,0 +1,452 @@
+[
+  {
+    "pickupId": "pickup-comp-001",
+    "listingId": "hist-list-001",
+    "collectorId": "col-001",
+    "status": "COMPLETED",
+    "sellerName": "Sunil Mehra",
+    "sellerPhone": "+910000000301",
+    "address": "Sector 3, Rohini",
+    "lat": 28.7145,
+    "lng": 77.1215,
+    "items": [
+      {
+        "material": "newspaper_paper",
+        "weight_kg_low": 20.0,
+        "weight_kg_high": 30.0
+      },
+      {
+        "material": "cardboard",
+        "weight_kg_low": 15.0,
+        "weight_kg_high": 25.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "newspaper_paper",
+        "actual_kg": 26.5
+      },
+      {
+        "material": "cardboard",
+        "actual_kg": 18.0
+      }
+    ],
+    "payout": 551.0,
+    "estimateErrorPct": 1.1,
+    "acceptedAt": "2026-10-04T03:20:01.965257+00:00",
+    "completedAt": "2026-10-04T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-002",
+    "listingId": "hist-list-002",
+    "collectorId": "col-001",
+    "status": "COMPLETED",
+    "sellerName": "Pawan Bansal",
+    "sellerPhone": "+910000000302",
+    "address": "Sector 7, Rohini",
+    "lat": 28.718,
+    "lng": 77.107,
+    "items": [
+      {
+        "material": "books_notebooks",
+        "weight_kg_low": 12.0,
+        "weight_kg_high": 18.0
+      },
+      {
+        "material": "pet_bottles",
+        "weight_kg_low": 8.0,
+        "weight_kg_high": 12.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "books_notebooks",
+        "actual_kg": 16.0
+      },
+      {
+        "material": "pet_bottles",
+        "actual_kg": 11.5
+      }
+    ],
+    "payout": 404.75,
+    "estimateErrorPct": 9.1,
+    "acceptedAt": "2026-10-06T03:20:01.965257+00:00",
+    "completedAt": "2026-10-06T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-003",
+    "listingId": "hist-list-003",
+    "collectorId": "col-002",
+    "status": "COMPLETED",
+    "sellerName": "Vikram Seth",
+    "sellerPhone": "+910000000303",
+    "address": "Sector 3, Rohini",
+    "lat": 28.7152,
+    "lng": 77.1228,
+    "items": [
+      {
+        "material": "ewaste_phone",
+        "weight_kg_low": 1.0,
+        "weight_kg_high": 2.0
+      },
+      {
+        "material": "iron_steel",
+        "weight_kg_low": 25.0,
+        "weight_kg_high": 35.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "ewaste_phone",
+        "actual_kg": 1.2
+      },
+      {
+        "material": "iron_steel",
+        "actual_kg": 32.0
+      }
+    ],
+    "payout": 980.0,
+    "estimateErrorPct": 5.1,
+    "acceptedAt": "2026-10-05T03:20:01.965257+00:00",
+    "completedAt": "2026-10-05T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-004",
+    "listingId": "hist-list-004",
+    "collectorId": "col-002",
+    "status": "COMPLETED",
+    "sellerName": "Anand Swaroop",
+    "sellerPhone": "+910000000304",
+    "address": "Sector 3, Rohini",
+    "lat": 28.716,
+    "lng": 77.121,
+    "items": [
+      {
+        "material": "hdpe_plastic",
+        "weight_kg_low": 10.0,
+        "weight_kg_high": 15.0
+      },
+      {
+        "material": "cardboard",
+        "weight_kg_low": 20.0,
+        "weight_kg_high": 30.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "hdpe_plastic",
+        "actual_kg": 13.0
+      },
+      {
+        "material": "cardboard",
+        "actual_kg": 23.5
+      }
+    ],
+    "payout": 521.0,
+    "estimateErrorPct": 2.7,
+    "acceptedAt": "2026-10-07T03:20:01.965257+00:00",
+    "completedAt": "2026-10-07T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-005",
+    "listingId": "hist-list-005",
+    "collectorId": "col-003",
+    "status": "COMPLETED",
+    "sellerName": "Ritu Bhasin",
+    "sellerPhone": "+910000000305",
+    "address": "Sector 7, Rohini",
+    "lat": 28.719,
+    "lng": 77.1065,
+    "items": [
+      {
+        "material": "newspaper_paper",
+        "weight_kg_low": 30.0,
+        "weight_kg_high": 40.0
+      },
+      {
+        "material": "mixed_plastic",
+        "weight_kg_low": 8.0,
+        "weight_kg_high": 14.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "newspaper_paper",
+        "actual_kg": 36.0
+      },
+      {
+        "material": "mixed_plastic",
+        "actual_kg": 10.0
+      }
+    ],
+    "payout": 614.0,
+    "estimateErrorPct": 0.0,
+    "acceptedAt": "2026-10-05T03:20:01.965257+00:00",
+    "completedAt": "2026-10-05T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-006",
+    "listingId": "hist-list-006",
+    "collectorId": "col-003",
+    "status": "COMPLETED",
+    "sellerName": "Kishore Kumar",
+    "sellerPhone": "+910000000306",
+    "address": "Sector 7, Rohini",
+    "lat": 28.717,
+    "lng": 77.104,
+    "items": [
+      {
+        "material": "books_notebooks",
+        "weight_kg_low": 15.0,
+        "weight_kg_high": 25.0
+      },
+      {
+        "material": "cardboard",
+        "weight_kg_low": 10.0,
+        "weight_kg_high": 15.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "books_notebooks",
+        "actual_kg": 18.5
+      },
+      {
+        "material": "cardboard",
+        "actual_kg": 13.0
+      }
+    ],
+    "payout": 352.0,
+    "estimateErrorPct": 3.2,
+    "acceptedAt": "2026-10-08T03:20:01.965257+00:00",
+    "completedAt": "2026-10-08T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-007",
+    "listingId": "hist-list-007",
+    "collectorId": "col-004",
+    "status": "COMPLETED",
+    "sellerName": "Naresh Mittal",
+    "sellerPhone": "+910000000307",
+    "address": "Bawana Industrial Area",
+    "lat": 28.794,
+    "lng": 77.052,
+    "items": [
+      {
+        "material": "aluminium",
+        "weight_kg_low": 8.0,
+        "weight_kg_high": 12.0
+      },
+      {
+        "material": "iron_steel",
+        "weight_kg_low": 40.0,
+        "weight_kg_high": 60.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "aluminium",
+        "actual_kg": 11.0
+      },
+      {
+        "material": "iron_steel",
+        "actual_kg": 47.0
+      }
+    ],
+    "payout": 2553.5,
+    "estimateErrorPct": 3.4,
+    "acceptedAt": "2026-10-04T03:20:01.965257+00:00",
+    "completedAt": "2026-10-04T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-008",
+    "listingId": "hist-list-008",
+    "collectorId": "col-004",
+    "status": "COMPLETED",
+    "sellerName": "Sanjay Garg",
+    "sellerPhone": "+910000000308",
+    "address": "Bawana Industrial Area",
+    "lat": 28.7925,
+    "lng": 77.0505,
+    "items": [
+      {
+        "material": "iron_steel",
+        "weight_kg_low": 30.0,
+        "weight_kg_high": 45.0
+      },
+      {
+        "material": "copper",
+        "weight_kg_low": 3.0,
+        "weight_kg_high": 5.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "iron_steel",
+        "actual_kg": 39.5
+      },
+      {
+        "material": "copper",
+        "actual_kg": 3.8
+      }
+    ],
+    "payout": 2892.0,
+    "estimateErrorPct": 4.2,
+    "acceptedAt": "2026-10-09T03:20:01.965257+00:00",
+    "completedAt": "2026-10-09T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-009",
+    "listingId": "hist-list-009",
+    "collectorId": "col-005",
+    "status": "COMPLETED",
+    "sellerName": "Geeta Kapoor",
+    "sellerPhone": "+910000000309",
+    "address": "Pitampura",
+    "lat": 28.7005,
+    "lng": 77.1395,
+    "items": [
+      {
+        "material": "newspaper_paper",
+        "weight_kg_low": 25.0,
+        "weight_kg_high": 35.0
+      },
+      {
+        "material": "pet_bottles",
+        "weight_kg_low": 10.0,
+        "weight_kg_high": 15.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "newspaper_paper",
+        "actual_kg": 28.0
+      },
+      {
+        "material": "pet_bottles",
+        "actual_kg": 13.5
+      }
+    ],
+    "payout": 641.75,
+    "estimateErrorPct": 2.4,
+    "acceptedAt": "2026-10-06T03:20:01.965257+00:00",
+    "completedAt": "2026-10-06T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-comp-010",
+    "listingId": "hist-list-010",
+    "collectorId": "col-005",
+    "status": "COMPLETED",
+    "sellerName": "Alok Jain",
+    "sellerPhone": "+910000000310",
+    "address": "Pitampura",
+    "lat": 28.6975,
+    "lng": 77.137,
+    "items": [
+      {
+        "material": "cardboard",
+        "weight_kg_low": 15.0,
+        "weight_kg_high": 20.0
+      },
+      {
+        "material": "books_notebooks",
+        "weight_kg_low": 15.0,
+        "weight_kg_high": 25.0
+      }
+    ],
+    "actualItems": [
+      {
+        "material": "cardboard",
+        "actual_kg": 16.5
+      },
+      {
+        "material": "books_notebooks",
+        "actual_kg": 22.0
+      }
+    ],
+    "payout": 429.0,
+    "estimateErrorPct": 2.6,
+    "acceptedAt": "2026-10-08T03:20:01.965257+00:00",
+    "completedAt": "2026-10-08T06:20:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-pre-001",
+    "listingId": "list-011",
+    "collectorId": "col-001",
+    "status": "ACCEPTED",
+    "sellerName": "Vandana Sethi",
+    "sellerPhone": "+910000000211",
+    "address": "Sector 3, Rohini",
+    "lat": 28.713,
+    "lng": 77.122,
+    "items": [
+      {
+        "material": "newspaper_paper",
+        "weight_kg_low": 12.0,
+        "weight_kg_high": 16.0
+      },
+      {
+        "material": "cardboard",
+        "weight_kg_low": 5.0,
+        "weight_kg_high": 8.0
+      }
+    ],
+    "acceptedAt": "2026-10-10T06:05:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-pre-002",
+    "listingId": "list-012",
+    "collectorId": "col-001",
+    "status": "ACCEPTED",
+    "sellerName": "Gaurav Malhotra",
+    "sellerPhone": "+910000000212",
+    "address": "Sector 3, Rohini",
+    "lat": 28.718,
+    "lng": 77.124,
+    "items": [
+      {
+        "material": "pet_bottles",
+        "weight_kg_low": 8.0,
+        "weight_kg_high": 12.0
+      },
+      {
+        "material": "hdpe_plastic",
+        "weight_kg_low": 4.0,
+        "weight_kg_high": 6.0
+      }
+    ],
+    "acceptedAt": "2026-10-10T06:35:01.965257+00:00",
+    "seeded": true
+  },
+  {
+    "pickupId": "pickup-pre-003",
+    "listingId": "list-013",
+    "collectorId": "col-001",
+    "status": "ACCEPTED",
+    "sellerName": "Karan Chawla",
+    "sellerPhone": "+910000000213",
+    "address": "Sector 7, Rohini",
+    "lat": 28.716,
+    "lng": 77.109,
+    "items": [
+      {
+        "material": "iron_steel",
+        "weight_kg_low": 15.0,
+        "weight_kg_high": 20.0
+      }
+    ],
+    "acceptedAt": "2026-10-10T07:10:01.965257+00:00",
+    "seeded": true
+  }
+]

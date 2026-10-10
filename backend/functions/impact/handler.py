@@ -41,22 +41,8 @@ DEFAULT_EMISSION_FACTORS = {
     "non_recyclable": 0.0,
 }
 
-# Seeded baseline figures so the impact dashboard is never blank on fresh deploys
-BASELINE_DATA = {
-    "seeded_diverted_by_material": {
-        "newspaper_paper": 480.0,
-        "cardboard": 310.0,
-        "pet_bottles": 135.5,
-        "iron_steel": 115.0,
-        "aluminium": 35.0,
-        "ewaste_phone": 12.0,
-        "books_notebooks": 65.0,
-    },
-    "seeded_payout_inr": 16420.0,
-    "seeded_pickups_count": 34,
-    "seeded_km_saved": 86.4,
-    "seeded_ewaste_items": 12,
-}
+# Default fallback baseline km saved
+DEFAULT_KM_SAVED_BASELINE = 86.4
 
 
 def load_emission_factors() -> Dict[str, float]:
@@ -82,7 +68,7 @@ def lambda_handler(event, context):
     factors = load_emission_factors()
 
     pickups_table_name = os.environ.get("PICKUPS_TABLE", "KabadiConnect-Pickups-dev")
-    live_pickups = []
+    completed_pickups = []
 
     try:
         dynamodb = get_dynamodb_resource()
@@ -94,42 +80,63 @@ def lambda_handler(event, context):
             all_items.extend(response.get("Items", []))
 
         # Filter COMPLETED pickups
-        live_pickups = [p for p in all_items if p.get("status") == "COMPLETED"]
+        completed_pickups = [p for p in all_items if p.get("status") == "COMPLETED"]
     except Exception as e:
         logger.warning(f"Could not scan PickupsTable for impact: {e}")
 
-    # Aggregate material weights and stats
-    diverted_by_material = dict(BASELINE_DATA["seeded_diverted_by_material"])
-    total_live_payout = 0.0
+    # Separate into seeded demo history vs real live pickups
+    seeded_diverted_by_material: Dict[str, float] = {}
+    live_diverted_by_material: Dict[str, float] = {}
+    diverted_by_material: Dict[str, float] = {}
+
+    seeded_pickups_count = 0
+    live_pickups_count = 0
+    seeded_payout_inr = 0.0
+    live_payout_inr = 0.0
+    seeded_ewaste_items = 0
+    live_ewaste_items = 0
+
     total_live_error_sum = 0.0
     live_error_count = 0
-    live_ewaste_count = 0
 
-    for pickup in live_pickups:
-        # Payout
+    for pickup in completed_pickups:
+        is_seeded = bool(pickup.get("seeded", False))
         payout = float(pickup.get("payout", 0))
-        total_live_payout += payout
 
-        # Error
-        err = pickup.get("estimateErrorPct")
-        if err is not None:
-            total_live_error_sum += float(err)
-            live_error_count += 1
+        if is_seeded:
+            seeded_pickups_count += 1
+            seeded_payout_inr += payout
+        else:
+            live_pickups_count += 1
+            live_payout_inr += payout
+            err = pickup.get("estimateErrorPct")
+            if err is not None:
+                total_live_error_sum += float(err)
+                live_error_count += 1
 
-        # Items
         actual_items = pickup.get("actualItems", [])
         for item in actual_items:
             mat = item.get("material", "")
             kg = float(item.get("actual_kg", 0))
+            if is_seeded:
+                seeded_diverted_by_material[mat] = seeded_diverted_by_material.get(mat, 0.0) + kg
+                if "ewaste" in mat:
+                    seeded_ewaste_items += 1
+            else:
+                live_diverted_by_material[mat] = live_diverted_by_material.get(mat, 0.0) + kg
+                if "ewaste" in mat:
+                    live_ewaste_items += 1
+
             diverted_by_material[mat] = diverted_by_material.get(mat, 0.0) + kg
-            if "ewaste" in mat:
-                live_ewaste_count += 1
 
     # Totals
     total_kg_diverted = sum(diverted_by_material.values())
-    total_income = BASELINE_DATA["seeded_payout_inr"] + total_live_payout
-    total_pickups = BASELINE_DATA["seeded_pickups_count"] + len(live_pickups)
-    total_ewaste = BASELINE_DATA["seeded_ewaste_items"] + live_ewaste_count
+    seeded_kg_diverted = sum(seeded_diverted_by_material.values())
+    live_kg_diverted = sum(live_diverted_by_material.values())
+
+    total_income = seeded_payout_inr + live_payout_inr
+    total_pickups = seeded_pickups_count + live_pickups_count
+    total_ewaste = seeded_ewaste_items + live_ewaste_items
 
     # Calculate avoided CO2e
     total_co2e_kg = 0.0
@@ -137,27 +144,32 @@ def lambda_handler(event, context):
         factor = factors.get(mat, 1.0)
         total_co2e_kg += kg * factor
 
-    # Weight-estimation error: LIVE completed pickups only. The seeded baseline
-    # has no measured error, so it must not be blended into an accuracy figure.
+    # Weight-estimation error: LIVE completed pickups only. Mock data must NOT feed this.
     if live_error_count > 0:
         avg_error = round(total_live_error_sum / live_error_count, 1)
     else:
         avg_error = None
 
-    # Route savings are not persisted per pickup, so live pickups add nothing here;
-    # this figure is the illustrative seeded baseline only.
-    km_saved = BASELINE_DATA["seeded_km_saved"]
+    km_saved = DEFAULT_KM_SAVED_BASELINE
 
     response = {
         "total_kg_diverted": round(total_kg_diverted, 1),
+        "seeded_kg_diverted": round(seeded_kg_diverted, 1),
+        "live_kg_diverted": round(live_kg_diverted, 1),
         "diverted_by_material": {k: round(v, 1) for k, v in diverted_by_material.items()},
+        "seeded_diverted_by_material": {k: round(v, 1) for k, v in seeded_diverted_by_material.items()},
+        "live_diverted_by_material": {k: round(v, 1) for k, v in live_diverted_by_material.items()},
         "collector_income_facilitated_inr": round(total_income, 0),
+        "seeded_payout_inr": round(seeded_payout_inr, 0),
+        "live_payout_inr": round(live_payout_inr, 0),
         "pickups_completed": total_pickups,
-        "live_pickups_count": len(live_pickups),
-        "seeded_pickups_count": BASELINE_DATA["seeded_pickups_count"],
+        "seeded_pickups_count": seeded_pickups_count,
+        "live_pickups_count": live_pickups_count,
         "km_saved": round(km_saved, 1),
         "km_saved_is_demo_baseline": True,
         "ewaste_items_redirected": total_ewaste,
+        "seeded_ewaste_items": seeded_ewaste_items,
+        "live_ewaste_items": live_ewaste_items,
         "weight_estimation_mape_pct": avg_error,
         "weight_estimation_sample_size": live_error_count,
         "co2e_avoided_kg": round(total_co2e_kg, 1),

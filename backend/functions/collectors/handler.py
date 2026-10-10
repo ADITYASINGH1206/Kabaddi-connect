@@ -104,13 +104,16 @@ def handle_get_collector_requests(event, context, collector_id: str):
                 "listingId": listing["listingId"],
                 "materials": listing_materials,
                 "kgRange": {"low": round(total_kg_low, 1), "high": round(total_kg_high, 1)},
+                "total_kg_range": {"low": round(total_kg_low, 1), "high": round(total_kg_high, 1)},
                 "estimatedValue": {"low": price_low, "high": price_high},
+                "estimated_value_mid": round(estimated_value_mid, 1),
                 "distanceKm": round(distance_km, 2),
                 "etaMin": round((distance_km / 20) * 60, 1),
                 "worthIt": estimated_value_mid >= MIN_WORTHWHILE_VALUE_INR,
                 "address": listing.get("address", ""),
                 "pickupWindow": listing.get("pickupWindow", {}),
                 "sellerName": listing.get("sellerName", ""),
+                "seeded": bool(listing.get("seeded", False)),
                 "score": round(
                     0.5 * max(0, 1 - distance_km / float(collector.get("max_radius_km", 5)))
                     + 0.3 * min(estimated_value_mid / 500.0, 1.0)
