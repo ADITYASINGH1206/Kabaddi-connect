@@ -1,25 +1,98 @@
+@import "@fontsource/yatra-one/400.css";
+@import "@fontsource/mukta/400.css";
+@import "@fontsource/mukta/600.css";
+@import "@fontsource/mukta/700.css";
 @import "tailwindcss";
 
+/* Palette taken from painted kabadi rate boards: ink-blue lettering,
+   safety-yellow ground, enamel red for warnings, and scale-pan green for money in. */
+@theme {
+  --color-ink: #14213d;
+  --color-ink-2: #2a3a5c;
+  --color-muted: #4b5870;
+  --color-paper: #f2f5f9;
+  --color-card: #ffffff;
+  --color-line: #cfd7e3;
+  --color-sun: #ffc72c;
+  --color-sun-soft: #fff1c2;
+  --color-brick: #c0302b;
+  --color-brick-soft: #fde8e6;
+  --color-leaf: #17724a;
+  --color-leaf-soft: #e1f3ea;
+  --font-display: "Yatra One", "Mukta", system-ui, sans-serif;
+  --font-sans: "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
 @layer base {
-  body {
-    @apply bg-slate-900 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--color-sun);
+}
+}
+
+@keyframes board-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
   }
 }
 
-/* Custom scrollbars for clean mobile & desktop feel */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+@keyframes sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
 }
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+
+.sheet-in {
+  animation: sheet-in 0.18s ease-out;
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 9999px;
+
+/* The single orchestrated moment: the rate board slides in on first load. */
+.board-in {
+  animation: board-in 0.45s ease-out both;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.7);
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

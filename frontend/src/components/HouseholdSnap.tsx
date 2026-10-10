@@ -3,7 +3,8 @@ import type { Language, VisionAnalysisResponse } from '../types';
 import { getTranslation } from '../i18n/translations';
 import { resizeImageForUpload } from '../utils/image';
 import { ApiClient } from '../api/client';
-import { Camera, Upload, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Camera, Loader2, PencilLine } from 'lucide-react';
+import { btnGhost, btnSun, Notice, Page } from './ui';
 
 interface HouseholdSnapProps {
   lang: Language;
@@ -67,11 +68,11 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
         // Graceful fallback with NO fake scrap items - user can manually add or retake
         const fallbackAnalysis: VisionAnalysisResponse = {
           photo_quality_ok: false,
-          retake_reason: 'Could not automatically identify scrap items in this photo. Please retake or add materials manually below.',
+          retake_reason: t.fallbackRetake,
           items: [],
           hazards: [],
           fallback: true,
-          fallback_message: 'Vision assistant could not detect scrap. You can add materials manually below.'
+          fallback_message: t.fallbackRetake,
         };
         onAnalysisComplete({
           analysis: fallbackAnalysis,
@@ -81,114 +82,87 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
       }
     } catch (err: any) {
       console.error('File processing error:', err);
-      setErrorMessage(err.message || 'Could not process image. Please try again.');
+      setErrorMessage(t.uploadFailed);
     } finally {
       setIsLoading(false);
       setLoadingStep('');
+      // allow choosing the same file again
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-[calc(100vh-80px)] px-4 py-6 max-w-lg mx-auto w-full">
-      <div className="w-full text-center mt-2">
-        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
-          {t.snapTitle}
-        </h2>
-        <p className="text-slate-400 text-xs sm:text-sm px-4">
-          {t.snapSubtitle}
-        </p>
+    <Page className="gap-5">
+      <div>
+        <h1 className="font-display text-3xl leading-tight">{t.snapTitle}</h1>
+        <p className="mt-1.5 text-base text-muted">{t.snapSubtitle}</p>
       </div>
 
-      {/* Main Snap Target / Viewfinder */}
-      <div className="w-full my-6 flex flex-col items-center">
+      {/* Viewfinder: corner brackets, like a camera frame */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border-2 border-ink bg-white">
         {selectedPreview ? (
-          <div className="relative w-full aspect-square max-w-sm rounded-3xl overflow-hidden border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/10">
-            <img
-              src={selectedPreview}
-              alt="Scrap Preview"
-              className="w-full h-full object-cover"
-            />
-            {isLoading && (
-              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-fade-in">
-                <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-4" />
-                <p className="text-sm font-bold text-white mb-1">
-                  {loadingStep}
-                </p>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  {t.analyzingHint}
-                </p>
-              </div>
-            )}
-          </div>
+          <img src={selectedPreview} alt={t.previewAlt} className="h-full w-full object-cover" />
         ) : (
-          <div
+          <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full aspect-square max-w-sm rounded-3xl border-2 border-dashed border-slate-700 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-slate-800/70 transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center group"
+            disabled={isLoading}
+            className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center hover:bg-sun-soft"
           >
-            <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
-              <Camera className="w-10 h-10" />
-            </div>
-            <p className="text-base font-semibold text-white mb-1">
-              {t.takePhoto}
-            </p>
-            <p className="text-xs text-slate-400 max-w-xs">
-              Take a live photo or upload from gallery (Auto-resized to 1280px)
-            </p>
-
-            <div className="mt-4 flex items-center space-x-2 text-[11px] text-emerald-400/90 font-medium bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-800/40">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Instant AI Identification</span>
-            </div>
+            <Camera className="h-14 w-14" aria-hidden />
+            <span className="text-lg font-bold">{t.snapHint}</span>
+            <span className="text-sm text-muted">{t.snapDropHint}</span>
+          </button>
+        )}
+        {(['left-2 top-2 border-l-4 border-t-4', 'right-2 top-2 border-r-4 border-t-4', 'bottom-2 left-2 border-b-4 border-l-4', 'bottom-2 right-2 border-b-4 border-r-4'] as const).map(
+          (c) => (
+            <span key={c} aria-hidden className={`pointer-events-none absolute h-7 w-7 border-ink ${c}`} />
+          )
+        )}
+        {isLoading && (
+          <div
+            role="status"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/85 p-6 text-center text-white"
+          >
+            <Loader2 className="h-9 w-9 animate-spin text-sun" aria-hidden />
+            <p className="text-lg font-bold">{loadingStep}</p>
+            <p className="text-sm text-white/80">{t.analyzingHint}</p>
           </div>
         )}
-
-        {errorMessage && (
-          <div className="mt-4 w-full p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start space-x-2 text-rose-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileChange}
-          className="hidden"
-        />
       </div>
 
-      {/* Action Buttons */}
-      <div className="w-full space-y-3 pb-2">
-        <button
-          disabled={isLoading}
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-base shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
-        >
+      {errorMessage && <Notice tone="error">{errorMessage}</Notice>}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden
+      />
+
+      <div className="mt-auto flex flex-col gap-3">
+        <button disabled={isLoading} onClick={() => fileInputRef.current?.click()} className={btnSun}>
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>{loadingStep || 'Processing...'}</span>
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+              <span>{loadingStep}</span>
             </>
           ) : (
             <>
-              <Camera className="w-5 h-5" />
+              <Camera className="h-5 w-5" aria-hidden />
               <span>{t.takePhoto}</span>
             </>
           )}
         </button>
-
-        <button
-          type="button"
-          disabled={isLoading}
-          onClick={onManualEntry}
-          className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-semibold transition-all active:scale-[0.99] flex items-center justify-center space-x-1.5"
-        >
-          <Upload className="w-3.5 h-3.5 text-slate-400" />
-          <span>No camera? Enter materials manually</span>
+        <button type="button" disabled={isLoading} onClick={onManualEntry} className={btnGhost}>
+          <PencilLine className="h-5 w-5" aria-hidden />
+          <span>{t.snapManual}</span>
         </button>
       </div>
-    </div>
+    </Page>
   );
 };

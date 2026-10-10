@@ -7,15 +7,26 @@ import type {
 } from '../types';
 import { getTranslation } from '../i18n/translations';
 import {
-  AlertTriangle,
-  RotateCcw,
-  Plus,
-  Trash2,
-  Sparkles,
-  Info,
   ChevronRight,
+  Minus,
+  Plus,
+  RotateCcw,
   ShieldAlert,
+  Trash2,
+  TriangleAlert,
 } from 'lucide-react';
+import {
+  btnGhost,
+  btnPrimary,
+  btnSun,
+  fieldInput,
+  inr,
+  niceMax,
+  Notice,
+  Page,
+  RangeRuler,
+  Sheet,
+} from './ui';
 
 interface HouseholdReviewProps {
   lang: Language;
@@ -25,6 +36,9 @@ interface HouseholdReviewProps {
   onRetake: () => void;
   onProceed: (confirmedItems: DetectedItem[], priceRange: { low: number; high: number }) => void;
 }
+
+const MIN_KG = 0.5;
+const clampKg = (v: number) => Math.max(MIN_KG, Math.round(v * 2) / 2);
 
 export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
   lang,
@@ -78,7 +92,7 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
       const rHigh = rate?.rate_high ?? 0;
       const userWeight = item.weight_kg_user;
 
-      // Price scales with user's slider estimate
+      // Price scales with the household's own weight estimate
       low += userWeight * rLow;
       high += userWeight * rHigh;
     }
@@ -89,9 +103,9 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
     };
   }, [items, ratesMap]);
 
-  const handleUpdateWeight = (id: string, newWeight: number) => {
+  const handleUpdateWeight = (id: string, weight: number) => {
     setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, weight_kg_user: newWeight } : it))
+      prev.map((it) => (it.id === id ? { ...it, weight_kg_user: clampKg(weight) } : it))
     );
   };
 
@@ -120,290 +134,230 @@ export const HouseholdReview: React.FC<HouseholdReviewProps> = ({
     return items.some((it) => ratesMap.get(it.material)?.hazardous);
   }, [items, ratesMap, analysis.hazards]);
 
+  const labelFor = (m: string) => {
+    const r = ratesMap.get(m);
+    return (lang === 'hi' ? r?.label_hi : r?.label_en) || m.replace(/_/g, ' ');
+  };
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-4 max-w-lg mx-auto w-full pb-24">
-      {/* Retake Alert when photo quality is poor */}
+    <Page className="gap-4 pb-28">
+      {/* Retake alert when photo quality is poor */}
       {!analysis.photo_quality_ok && (
-        <div className="mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200">
-          <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-amber-300">
-                {t.retakePrompt}
-              </h4>
-              <p className="text-xs text-amber-200/90 mt-1">
-                {analysis.retake_reason ||
-                  'The image was too blurry or dim for clear AI recognition.'}
-              </p>
-              <button
-                onClick={onRetake}
-                className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>{t.retakeAction}</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <Notice tone="warn" title={t.retakePrompt} icon={<TriangleAlert className="h-5 w-5" aria-hidden />}>
+          <p>{analysis.retake_reason || t.retakeFallback}</p>
+          <button onClick={onRetake} className={`${btnGhost} mt-3 !min-h-11 !px-3 !py-2 text-sm`}>
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            {t.retakeAction}
+          </button>
+        </Notice>
       )}
 
-      {/* Hazard Banner */}
+      {/* Hazard banner */}
       {hasHazardousItem && (
-        <div className="mb-4 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 shadow-lg shadow-rose-950/30">
-          <div className="flex items-start space-x-3">
-            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-rose-300">
-                {t.hazardBannerTitle}
-              </h4>
-              <p className="text-xs text-rose-200/90 mt-1 leading-relaxed">
-                {t.hazardBannerDesc}
-              </p>
-              {analysis.hazards && analysis.hazards.length > 0 && (
-                <ul className="mt-2 list-disc list-inside text-[11px] text-rose-300 space-y-0.5">
-                  {analysis.hazards.map((h, i) => (
-                    <li key={i}>{h}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
+        <Notice tone="error" title={t.hazardBannerTitle} icon={<ShieldAlert className="h-5 w-5 text-brick" aria-hidden />}>
+          <p>{t.hazardBannerDesc}</p>
+          {analysis.hazards && analysis.hazards.length > 0 && (
+            <ul className="mt-2 list-inside list-disc">
+              {analysis.hazards.map((h, i) => (
+                <li key={i}>{h}</li>
+              ))}
+            </ul>
+          )}
+        </Notice>
       )}
 
-      {/* Photo Preview Thumbnail if available */}
+      {/* The headline number: a price tag, in range form */}
+      <section className="rounded-md border-2 border-ink bg-sun p-4" aria-live="polite">
+        <p className="text-base font-semibold">{t.estimatedValue}</p>
+        <p className="font-display text-[2.4rem] leading-tight tabular-nums">
+          {inr(priceRange.low)} – {inr(priceRange.high)}
+        </p>
+        <p className="mt-1 text-sm">{t.indicativeNotice}</p>
+      </section>
+
       {previewUrl && (
-        <div className="mb-4 flex items-center space-x-3 p-3 rounded-2xl bg-slate-800/60 border border-slate-700/60">
+        <div className="flex items-center gap-3">
           <img
             src={previewUrl}
-            alt="Scrap item thumbnail"
-            className="w-14 h-14 rounded-xl object-cover border border-slate-700"
+            alt=""
+            className="h-14 w-14 shrink-0 rounded-md border-2 border-ink object-cover"
           />
-          <div className="flex-1 min-w-0">
-            <span className="text-xs font-bold text-white block truncate">
-              {analysis.photo_quality_ok ? 'Scrap Photo Verified' : 'Photo Flagged'}
-            </span>
-            <span className="text-[11px] text-slate-400 block truncate">
-              {items.length} items detected • Click retake if inaccurate
-            </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-bold">
+              {analysis.photo_quality_ok ? t.photoOk : t.photoFlagged}
+            </p>
+            <p className="text-sm text-muted">
+              {items.length} {t.itemsDetected}
+            </p>
           </div>
-          <button
-            onClick={onRetake}
-            className="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 text-xs flex items-center space-x-1"
-            title="Retake photo"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
+          <button onClick={onRetake} className="flex min-h-11 items-center gap-1.5 rounded-md px-3 text-sm font-bold underline-offset-4 hover:underline">
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            {t.retakeAction}
           </button>
         </div>
       )}
 
-      {/* Hero: Estimated Total Price Band */}
-      <div className="p-5 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/80 shadow-xl mb-5">
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-          <span>{t.estimatedValue}</span>
-          <span className="inline-flex items-center text-emerald-400 font-medium">
-            <Sparkles className="w-3.5 h-3.5 mr-1" />
-            Live Bedrock Rates
-          </span>
-        </div>
-
-        <div className="flex items-baseline space-x-2">
-          <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            ₹{priceRange.low.toLocaleString('en-IN')} – ₹{priceRange.high.toLocaleString('en-IN')}
-          </span>
-        </div>
-
-        <p className="text-[11px] text-slate-400 mt-2 flex items-center">
-          <Info className="w-3.5 h-3.5 text-slate-400 mr-1 shrink-0" />
-          {t.indicativeNotice}
-        </p>
-      </div>
-
-      {/* Materials List Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-bold text-white">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl">
           {t.materialsFound} ({items.length})
-        </h3>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 py-1 px-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>{t.addMaterial}</span>
+        </h2>
+        <button onClick={() => setShowAddModal(true)} className={`${btnGhost} shrink-0 whitespace-nowrap !min-h-11 !px-3 !py-2 text-sm`}>
+          <Plus className="h-4 w-4" aria-hidden />
+          {t.addMaterial}
         </button>
       </div>
 
-      {/* Material Cards */}
       {items.length === 0 ? (
-        <div className="p-8 text-center rounded-2xl bg-slate-800/30 border border-slate-800 text-slate-400 text-xs">
-          <p className="mb-3">{t.emptyListWarning}</p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
-          >
+        <div className="rounded-md border-2 border-dashed border-ink p-6 text-center">
+          <p className="mb-3 text-base">{t.emptyListWarning}</p>
+          <button onClick={() => setShowAddModal(true)} className={btnSun}>
+            <Plus className="h-5 w-5" aria-hidden />
             {t.addMaterial}
           </button>
         </div>
       ) : (
-        <div className="space-y-3.5">
+        <ul className="flex flex-col gap-4">
           {items.map((item) => {
             const rate = ratesMap.get(item.material);
-            const label =
-              lang === 'hi'
-                ? rate?.label_hi || item.material
-                : rate?.label_en || item.material;
             const rLow = rate?.rate_low ?? 0;
             const rHigh = rate?.rate_high ?? 0;
             const isHazard = rate?.hazardous;
+            const label = labelFor(item.material);
+            const max = niceMax(item.weight_kg_high, item.weight_kg_user);
 
             return (
-              <div
+              <li
                 key={item.id}
-                className={`p-4 rounded-2xl border transition-all ${
-                  isHazard
-                    ? 'bg-rose-950/20 border-rose-500/40'
-                    : 'bg-slate-800/80 border-slate-700/80'
-                }`}
+                className={`rounded-md border-2 bg-card p-4 ${isHazard ? 'border-brick' : 'border-ink'}`}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h4 className="text-sm font-bold text-white capitalize">
-                        {label}
-                      </h4>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold capitalize leading-tight">{label}</h3>
+                    <p className="text-sm text-muted">
+                      {t.indicativeRateLabel}: ₹{rLow}–₹{rHigh} / {rate?.unit || 'kg'}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
                       {isHazard && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300">
-                          Hazardous
+                        <span className="rounded-sm bg-brick px-1.5 text-sm font-bold text-white">
+                          {t.hazardBadge}
                         </span>
                       )}
                       {item.isManual && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700 text-slate-300">
-                          Manual
+                        <span className="rounded-sm border border-ink px-1.5 text-sm font-semibold">
+                          {t.manualBadge}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {t.indicativeRateLabel}: ₹{rLow} - ₹{rHigh} / {rate?.unit || 'kg'}
-                    </p>
                   </div>
-
                   <button
                     onClick={() => handleRemoveItem(item.id)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-700/50 transition-colors"
-                    title="Remove item"
+                    aria-label={`${t.removeItem}: ${label}`}
+                    className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted hover:bg-brick-soft hover:text-brick"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-5 w-5" />
                   </button>
                 </div>
 
-                {/* Weight Adjustment Slider */}
-                <div className="mt-3 pt-3 border-t border-slate-700/50">
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-slate-300 font-medium">
-                      {t.sliderLabel}
-                    </span>
-                    <span className="font-extrabold text-emerald-400 text-sm">
-                      {item.weight_kg_user} kg
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="50"
-                    step="0.5"
+                <div className="mt-4">
+                  <RangeRuler
+                    max={max}
+                    low={item.weight_kg_low}
+                    high={item.weight_kg_high}
                     value={item.weight_kg_user}
-                    onChange={(e) =>
-                      handleUpdateWeight(item.id, parseFloat(e.target.value))
-                    }
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    valueLabel={`${item.weight_kg_user} ${t.kg}`}
+                    ariaLabel={`${t.yourWeight}: ${label}`}
+                    bandLabel={t.aiRange}
+                    onChange={(v) => handleUpdateWeight(item.id, v)}
                   />
-
-                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                    <span>0.5 kg</span>
-                    <span>Confidence: {Math.round(item.confidence * 100)}%</span>
-                    <span>50 kg</span>
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    <p className="text-sm text-muted">
+                      <span className="mr-1.5 inline-block h-3 w-4 border-2 border-ink bg-sun align-middle" aria-hidden />
+                      {t.aiRange}: {item.weight_kg_low}–{item.weight_kg_high} {t.kg}
+                      {!item.isManual && <> · {t.confidenceShort} {Math.round(item.confidence * 100)}%</>}
+                    </p>
+                    <div className="flex shrink-0 gap-1.5">
+                      <button
+                        onClick={() => handleUpdateWeight(item.id, item.weight_kg_user - 0.5)}
+                        aria-label={`${t.lessWeight}: ${label}`}
+                        className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-ink hover:bg-sun-soft"
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleUpdateWeight(item.id, item.weight_kg_user + 0.5)}
+                        aria-label={`${t.moreWeight}: ${label}`}
+                        className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-ink hover:bg-sun-soft"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
-      {/* Floating Action Button: Proceed */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-40 max-w-lg mx-auto">
-        <button
-          disabled={items.length === 0}
-          onClick={() => onProceed(items, priceRange)}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-base shadow-xl shadow-emerald-500/25 transition-all active:scale-[0.99] flex items-center justify-center space-x-2 disabled:opacity-40 cursor-pointer"
-        >
-          <span>{t.proceedToPickup}</span>
-          <ChevronRight className="w-5 h-5" />
-        </button>
+      {/* Sticky action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-paper">
+        <div className="mx-auto max-w-lg p-3">
+          <button
+            disabled={items.length === 0}
+            onClick={() => onProceed(items, priceRange)}
+            className={btnPrimary}
+          >
+            <span>{t.proceedToPickup}</span>
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </button>
+        </div>
       </div>
 
-      {/* Manual Add Material Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-3xl bg-slate-800 border border-slate-700 p-6 shadow-2xl animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              {t.manualAddTitle}
-            </h3>
+        <Sheet title={t.manualAddTitle} closeLabel={t.cancel} onClose={() => setShowAddModal(false)}>
+          <div className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="new-material" className="mb-1.5 block text-base font-bold">
+                {t.materialLabel}
+              </label>
+              <select
+                id="new-material"
+                value={selectedNewMaterial}
+                onChange={(e) => setSelectedNewMaterial(e.target.value)}
+                className={fieldInput}
+              >
+                {rates.map((r) => (
+                  <option key={r.material} value={r.material}>
+                    {lang === 'hi' ? r.label_hi : r.label_en} (₹{r.rate_low}–{r.rate_high}/kg)
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Material
-                </label>
-                <select
-                  value={selectedNewMaterial}
-                  onChange={(e) => setSelectedNewMaterial(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-emerald-500 outline-none"
-                >
-                  {rates.map((r) => (
-                    <option key={r.material} value={r.material}>
-                      {lang === 'hi' ? r.label_hi : r.label_en} (₹{r.rate_low}-{r.rate_high}/kg)
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <p className="mb-2 text-base font-bold">{t.weightLabel}</p>
+              <RangeRuler
+                max={niceMax(newWeight * 1.2, newWeight)}
+                low={newWeight * 0.8}
+                high={newWeight * 1.2}
+                value={newWeight}
+                valueLabel={`${newWeight} ${t.kg}`}
+                ariaLabel={t.weightLabel}
+                onChange={(v) => setNewWeight(clampKg(v))}
+              />
+            </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Estimated Weight (kg): {newWeight} kg
-                </label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="50"
-                  step="0.5"
-                  value={newWeight}
-                  onChange={(e) => setNewWeight(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                />
-              </div>
-
-              <div className="flex space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold transition-colors"
-                >
-                  {t.cancel}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddItem}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors"
-                >
-                  {t.add}
-                </button>
-              </div>
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={() => setShowAddModal(false)} className={`${btnGhost} flex-1`}>
+                {t.cancel}
+              </button>
+              <button type="button" onClick={handleAddItem} className={`${btnSun} flex-1`}>
+                {t.add}
+              </button>
             </div>
           </div>
-        </div>
+        </Sheet>
       )}
-    </div>
+    </Page>
   );
 };
