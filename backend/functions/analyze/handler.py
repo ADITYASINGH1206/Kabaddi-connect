@@ -37,8 +37,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Default Bedrock model and region (overridable via environment variables)
-DEFAULT_MODEL_ID = "apac.amazon.nova-lite-v1:0"
-DEFAULT_BEDROCK_REGION = "ap-south-1"
+DEFAULT_MODEL_ID = "amazon.nova-lite-v1:0"
+DEFAULT_BEDROCK_REGION = "ap-southeast-2"
 
 
 # API Gateway HTTP APIs cut the request off at ~30 s. Bound each Bedrock call and

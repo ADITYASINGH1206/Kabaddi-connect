@@ -10,13 +10,13 @@ parallel = true
 
 [default.deploy.parameters]
 stack_name = "kabadiconnect"
-region = "ap-south-1"
+region = "ap-southeast-2"
 capabilities = "CAPABILITY_IAM"
-confirm_changeset = true
+confirm_changeset = false
 resolve_s3 = true
 s3_prefix = "kabadiconnect"
 image_repositories = []
-parameter_overrides = "Environment=\"dev\" BedrockModelId=\"apac.amazon.nova-lite-v1:0\" BedrockRegion=\"ap-south-1\""
+parameter_overrides = "Environment=\"dev\" BedrockModelId=\"amazon.nova-lite-v1:0\" BedrockRegion=\"ap-southeast-2\""
 
 [default.sync.parameters]
 watch = true

@@ -64,17 +64,14 @@ export const HouseholdSnap: React.FC<HouseholdSnapProps> = ({
         });
       } catch (analyzeErr) {
         console.warn('Vision analyze call returned error, applying graceful fallback:', analyzeErr);
-        // Graceful fallback per section 0 rule 3
+        // Graceful fallback with NO fake scrap items - user can manually add or retake
         const fallbackAnalysis: VisionAnalysisResponse = {
-          photo_quality_ok: true,
-          retake_reason: null,
-          items: [
-            { material: 'newspaper_paper', weight_kg_low: 5.0, weight_kg_high: 8.0, confidence: 0.9 },
-            { material: 'cardboard', weight_kg_low: 2.0, weight_kg_high: 4.0, confidence: 0.85 }
-          ],
+          photo_quality_ok: false,
+          retake_reason: 'Could not automatically identify scrap items in this photo. Please retake or add materials manually below.',
+          items: [],
           hazards: [],
           fallback: true,
-          fallback_message: 'Vision assistant in demo mode. You can edit or add items below.'
+          fallback_message: 'Vision assistant could not detect scrap. You can add materials manually below.'
         };
         onAnalysisComplete({
           analysis: fallbackAnalysis,

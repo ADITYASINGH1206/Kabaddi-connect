@@ -13,7 +13,8 @@ S3_CLIENT_CONFIG = Config(signature_version="s3v4")
 
 
 def get_s3_client(region_name: Optional[str] = None):
-    return boto3.client("s3", region_name=region_name, config=S3_CLIENT_CONFIG)
+    endpoint_url = f"https://s3.{region_name}.amazonaws.com" if region_name else None
+    return boto3.client("s3", region_name=region_name, endpoint_url=endpoint_url, config=S3_CLIENT_CONFIG)
 
 
 def generate_presigned_upload_url(

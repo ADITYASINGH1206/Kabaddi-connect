@@ -130,6 +130,9 @@ def validate_vision_response(data: Any) -> Dict[str, Any]:
             "note": note,
         })
 
+    if not photo_quality_ok:
+        validated_items = []
+
     return {
         "photo_quality_ok": photo_quality_ok,
         "retake_reason": retake_reason if not photo_quality_ok else None,
