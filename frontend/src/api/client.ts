@@ -1,4 +1,17 @@
-import type { MaterialRate, UploadResponse, VisionAnalysisResponse } from '../types';
+import type {
+  ActualItemInput,
+  Collector,
+  CollectorRequestItem,
+  CreateListingRequest,
+  CreateListingResponse,
+  ImpactStats,
+  ListingDetailsResponse,
+  MaterialRate,
+  PickupRecord,
+  RouteResponse,
+  UploadResponse,
+  VisionAnalysisResponse,
+} from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -15,13 +28,18 @@ export class ApiClient {
 
     if (!response.ok) {
       let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+      let errorCode = 'UNKNOWN_ERROR';
       try {
         const errJson = await response.json();
         if (errJson.error) errorMsg = errJson.error;
+        if (errJson.code) errorCode = errJson.code;
       } catch {
         // ignore JSON parse error on non-json error responses
       }
-      throw new Error(errorMsg);
+      const err = new Error(errorMsg) as Error & { code?: string; status?: number };
+      err.code = errorCode;
+      err.status = response.status;
+      throw err;
     }
 
     return response.json();
@@ -36,7 +54,6 @@ export class ApiClient {
       return await this.request<MaterialRate[]>('/rates');
     } catch (err) {
       console.warn('API rates fetch failed, using local fallback rates:', err);
-      // Fallback default indicative rates for offline or local preview
       return [
         { material: 'newspaper_paper', label_en: 'Newspaper & Paper', label_hi: 'अखबार और रद्दी कागज', rate_low: 12, rate_high: 16, unit: 'kg', hazardous: false, authorised_channel_only: false },
         { material: 'cardboard', label_en: 'Cardboard / Boxes', label_hi: 'गत्ता / कार्टन', rate_low: 8, rate_high: 12, unit: 'kg', hazardous: false, authorised_channel_only: false },
@@ -80,5 +97,80 @@ export class ApiClient {
       method: 'POST',
       body: JSON.stringify({ imageKey, lang }),
     });
+  }
+
+  // ─── Phase 1: Listings ────────────────────────────────────────────────────────
+  static async createListing(data: CreateListingRequest): Promise<CreateListingResponse> {
+    return this.request<CreateListingResponse>('/listings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async getListing(id: string): Promise<ListingDetailsResponse> {
+    return this.request<ListingDetailsResponse>(`/listings/${id}`);
+  }
+
+  // ─── Phase 2: Collectors & Requests ──────────────────────────────────────────
+  static async getCollectors(): Promise<Collector[]> {
+    return this.request<Collector[]>('/collectors');
+  }
+
+  static async getCollectorRequests(collectorId: string): Promise<CollectorRequestItem[]> {
+    return this.request<CollectorRequestItem[]>(`/collectors/${collectorId}/requests`);
+  }
+
+  static async acceptListing(listingId: string, collectorId: string): Promise<{
+    listingId: string;
+    status: string;
+    acceptedCollectorId: string;
+    pickupId: string;
+    acceptedAt: string;
+  }> {
+    return this.request(`/listings/${listingId}/accept`, {
+      method: 'POST',
+      body: JSON.stringify({ collectorId }),
+    });
+  }
+
+  // ─── Phase 2: Pickups ────────────────────────────────────────────────────────
+  static async getPickups(collectorId: string): Promise<PickupRecord[]> {
+    return this.request<PickupRecord[]>(`/pickups?collectorId=${encodeURIComponent(collectorId)}`);
+  }
+
+  static async getPickup(pickupId: string): Promise<PickupRecord> {
+    return this.request<PickupRecord>(`/pickups/${pickupId}`);
+  }
+
+  static async completePickup(
+    pickupId: string,
+    actualItems: ActualItemInput[]
+  ): Promise<{
+    pickupId: string;
+    status: string;
+    payout: number;
+    estimateErrorPct: number;
+    actualItems: ActualItemInput[];
+    completedAt: string;
+  }> {
+    return this.request(`/pickups/${pickupId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify({ actualItems }),
+    });
+  }
+
+  static async getCollectorRoute(
+    collectorId: string,
+    start?: { lat: number; lng: number }
+  ): Promise<RouteResponse> {
+    return this.request<RouteResponse>(`/collectors/${collectorId}/route`, {
+      method: 'POST',
+      body: JSON.stringify({ start: start || { lat: 28.7501, lng: 77.1177 } }),
+    });
+  }
+
+  // ─── Phase 3: Impact ─────────────────────────────────────────────────────────
+  static async getImpact(): Promise<ImpactStats> {
+    return this.request<ImpactStats>('/impact');
   }
 }

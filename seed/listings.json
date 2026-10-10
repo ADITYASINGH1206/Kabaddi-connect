@@ -4,10 +4,10 @@
     "status": "OPEN",
     "sellerName": "Pooja Verma",
     "sellerPhone": "+919876500001",
-    "address": "B-42, Greater Kailash 1, New Delhi",
-    "lat": 28.5482,
-    "lng": 77.2384,
-    "pickupWindow": {"date": "2026-10-09", "from": "16:00", "to": "18:00"},
+    "address": "A-12, Rohini Sector 3, New Delhi",
+    "lat": 28.7160,
+    "lng": 77.1215,
+    "pickupWindow": {"date": "2026-10-10", "from": "10:00", "to": "12:00"},
     "imageKey": "sample-newspaper-bottles.jpg",
     "items": [
       {"material": "newspaper_paper", "weight_kg_low": 8.0, "weight_kg_high": 12.0, "weight_kg_user": 10.0, "confidence": 0.92},
@@ -15,7 +15,141 @@
     ],
     "estimate": {"price_low": 118.5, "price_high": 247.0},
     "visionUsed": true,
-    "matchedCollectorIds": ["col-001"],
-    "createdAt": "2026-10-08T18:00:00Z"
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-09T18:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-002",
+    "status": "OPEN",
+    "sellerName": "Aarti Singh",
+    "sellerPhone": "+919876500002",
+    "address": "B-7, Rohini Sector 3, New Delhi",
+    "lat": 28.7155,
+    "lng": 77.1225,
+    "pickupWindow": {"date": "2026-10-10", "from": "14:00", "to": "16:00"},
+    "imageKey": "sample-cardboard-iron.jpg",
+    "items": [
+      {"material": "cardboard", "weight_kg_low": 5.0, "weight_kg_high": 8.0, "weight_kg_user": 6.5, "confidence": 0.90},
+      {"material": "iron_steel", "weight_kg_low": 3.0, "weight_kg_high": 5.0, "weight_kg_user": 4.0, "confidence": 0.88}
+    ],
+    "estimate": {"price_low": 112.0, "price_high": 256.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-09T19:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-003",
+    "status": "OPEN",
+    "sellerName": "Vivek Malhotra",
+    "sellerPhone": "+919876500003",
+    "address": "C-22, Rohini Sector 3, New Delhi",
+    "lat": 28.7148,
+    "lng": 77.1210,
+    "pickupWindow": {"date": "2026-10-10", "from": "09:00", "to": "11:00"},
+    "imageKey": "sample-pet-plastic.jpg",
+    "items": [
+      {"material": "pet_bottles", "weight_kg_low": 4.0, "weight_kg_high": 6.0, "weight_kg_user": 5.0, "confidence": 0.91},
+      {"material": "hdpe_plastic", "weight_kg_low": 2.0, "weight_kg_high": 3.0, "weight_kg_user": 2.5, "confidence": 0.87}
+    ],
+    "estimate": {"price_low": 96.0, "price_high": 210.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-09T20:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-004",
+    "status": "OPEN",
+    "sellerName": "Neha Kapoor",
+    "sellerPhone": "+919876500004",
+    "address": "D-3, Rohini Sector 3, New Delhi",
+    "lat": 28.7163,
+    "lng": 77.1230,
+    "pickupWindow": {"date": "2026-10-10", "from": "16:00", "to": "18:00"},
+    "imageKey": "sample-aluminium-books.jpg",
+    "items": [
+      {"material": "aluminium", "weight_kg_low": 1.0, "weight_kg_high": 2.0, "weight_kg_user": 1.5, "confidence": 0.82},
+      {"material": "books_notebooks", "weight_kg_low": 3.0, "weight_kg_high": 5.0, "weight_kg_user": 4.0, "confidence": 0.93}
+    ],
+    "estimate": {"price_low": 125.0, "price_high": 330.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-09T21:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-005",
+    "status": "OPEN",
+    "sellerName": "Ritu Devi",
+    "sellerPhone": "+919876500005",
+    "address": "E-8, Shalimar Bagh, New Delhi",
+    "lat": 28.7180,
+    "lng": 77.1530,
+    "pickupWindow": {"date": "2026-10-10", "from": "11:00", "to": "13:00"},
+    "imageKey": "sample-ewaste-phone.jpg",
+    "items": [
+      {"material": "ewaste_phone", "weight_kg_low": 0.5, "weight_kg_high": 1.0, "weight_kg_user": 0.8, "confidence": 0.95},
+      {"material": "newspaper_paper", "weight_kg_low": 2.0, "weight_kg_high": 4.0, "weight_kg_user": 3.0, "confidence": 0.88}
+    ],
+    "estimate": {"price_low": 44.0, "price_high": 164.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-10T06:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-006",
+    "status": "OPEN",
+    "sellerName": "Prakash Mehta",
+    "sellerPhone": "+919876500006",
+    "address": "F-44, Model Town, New Delhi",
+    "lat": 28.7130,
+    "lng": 77.1900,
+    "pickupWindow": {"date": "2026-10-10", "from": "15:00", "to": "17:00"},
+    "imageKey": "sample-copper-brass.jpg",
+    "items": [
+      {"material": "copper", "weight_kg_low": 0.5, "weight_kg_high": 1.0, "weight_kg_user": 0.7, "confidence": 0.80},
+      {"material": "brass", "weight_kg_low": 0.5, "weight_kg_high": 1.0, "weight_kg_user": 0.8, "confidence": 0.78}
+    ],
+    "estimate": {"price_low": 450.0, "price_high": 900.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-10T07:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-007",
+    "status": "OPEN",
+    "sellerName": "Sunita Rani",
+    "sellerPhone": "+919876500007",
+    "address": "G-11, Pitampura, New Delhi",
+    "lat": 28.6960,
+    "lng": 77.1435,
+    "pickupWindow": {"date": "2026-10-10", "from": "10:00", "to": "12:00"},
+    "imageKey": "sample-small-paper.jpg",
+    "items": [
+      {"material": "newspaper_paper", "weight_kg_low": 0.5, "weight_kg_high": 1.0, "weight_kg_user": 0.8, "confidence": 0.89}
+    ],
+    "estimate": {"price_low": 6.0, "price_high": 16.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "_note": "Below minimum-worthwhile value listing for batchHint testing",
+    "createdAt": "2026-10-10T08:00:00Z"
+  },
+  {
+    "listingId": "listing-demo-008",
+    "status": "OPEN",
+    "sellerName": "Manish Tiwari",
+    "sellerPhone": "+919876500008",
+    "address": "H-5, DTU Campus Area, New Delhi",
+    "lat": 28.7495,
+    "lng": 77.1185,
+    "pickupWindow": {"date": "2026-10-10", "from": "13:00", "to": "15:00"},
+    "imageKey": "sample-mixed-scrap.jpg",
+    "items": [
+      {"material": "cardboard", "weight_kg_low": 3.0, "weight_kg_high": 5.0, "weight_kg_user": 4.0, "confidence": 0.90},
+      {"material": "iron_steel", "weight_kg_low": 2.0, "weight_kg_high": 4.0, "weight_kg_user": 3.0, "confidence": 0.85},
+      {"material": "glass_bottles", "weight_kg_low": 1.0, "weight_kg_high": 2.0, "weight_kg_user": 1.5, "confidence": 0.80}
+    ],
+    "estimate": {"price_low": 74.0, "price_high": 198.0},
+    "visionUsed": true,
+    "matchedCollectorIds": [],
+    "createdAt": "2026-10-10T09:00:00Z"
   }
 ]
