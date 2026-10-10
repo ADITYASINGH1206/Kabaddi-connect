@@ -120,6 +120,9 @@ export const translations = {
     modelAccuracyTitle: 'Vision Weight Estimation Accuracy',
     co2Footnote: 'CO2e emissions avoided are calculated based on indicative lifecycle recycling factors.',
     includesDemoData: 'Includes seeded demo baseline + live completed pickups',
+    accuracyLiveOnly: 'Mean absolute % error, live pickups only',
+    accuracyNoData: 'Complete a pickup to measure real accuracy',
+    demoBaselineTag: 'demo baseline',
   },
   hi: {
     appTitle: 'कबाड़ी कनेक्ट',
@@ -240,6 +243,9 @@ export const translations = {
     modelAccuracyTitle: 'AI वजन अनुमान सटीकता',
     co2Footnote: 'CO2e बचत का अनुमान वैश्विक रीसाइक्लिंग जीवन-चक्र सूचकांक पर आधारित है।',
     includesDemoData: 'डेमो बेसलाइन + लाइव पूर्ण पिकअप के सम्मिलित आंकड़े',
+    accuracyLiveOnly: 'औसत % त्रुटि, केवल लाइव पिकअप',
+    accuracyNoData: 'वास्तविक सटीकता मापने के लिए एक पिकअप पूरा करें',
+    demoBaselineTag: 'डेमो बेसलाइन',
   }
 };
 

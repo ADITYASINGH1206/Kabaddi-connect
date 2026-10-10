@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: KabadiConnect - AI-Powered Informal Recycling Marketplace Backend (M0 and M1)
+Description: KabadiConnect - AI-Powered Informal Recycling Marketplace Backend
 
 Parameters:
   Environment:
@@ -40,6 +40,11 @@ Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
+      # Public URL + metered services (Bedrock): cap request rate so a crawler or
+      # a loop in a client cannot burn the credits.
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
       CorsConfiguration:
         AllowMethods:
           - GET
@@ -399,3 +404,9 @@ Outputs:
   ListingsTableName:
     Description: DynamoDB table name for listings
     Value: !Ref ListingsTable
+  CollectorsTableName:
+    Description: DynamoDB table name for collectors
+    Value: !Ref CollectorsTable
+  PickupsTableName:
+    Description: DynamoDB table name for pickups
+    Value: !Ref PickupsTable

@@ -135,6 +135,9 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang, onBack }
                   {stats.km_saved}
                 </span>
                 <span className="text-xs text-sky-400 font-bold ml-1">km saved</span>
+                {stats.km_saved_is_demo_baseline && (
+                  <span className="block text-[10px] text-slate-500 mt-0.5">{t.demoBaselineTag}</span>
+                )}
               </div>
             </div>
           </div>
@@ -146,9 +149,15 @@ export const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ lang, onBack }
                 {t.modelAccuracyTitle}
               </span>
               <span className="text-lg font-extrabold text-white mt-1 block">
-                {stats.weight_estimation_mape_pct}%
+                {stats.weight_estimation_mape_pct != null
+                  ? `${stats.weight_estimation_mape_pct}%`
+                  : '—'}
               </span>
-              <span className="text-[10px] text-slate-400">Mean Absolute % Error</span>
+              <span className="text-[10px] text-slate-400">
+                {stats.weight_estimation_mape_pct != null
+                  ? `${t.accuracyLiveOnly} (${stats.weight_estimation_sample_size ?? 0})`
+                  : t.accuracyNoData}
+              </span>
             </div>
 
             <div className="border-l border-slate-700/70 pl-4">

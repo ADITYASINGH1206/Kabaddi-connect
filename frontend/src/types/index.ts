@@ -242,10 +242,11 @@ export interface ImpactStats {
   pickups_completed: number;
   live_pickups_count: number;
   seeded_pickups_count: number;
-  trips_saved: number;
   km_saved: number;
   ewaste_items_redirected: number;
-  weight_estimation_mape_pct: number;
+  weight_estimation_mape_pct: number | null;
+  weight_estimation_sample_size?: number;
+  km_saved_is_demo_baseline?: boolean;
   co2e_avoided_kg: number;
   emissionSource: string;
   is_stub: boolean;

@@ -37,3 +37,6 @@ yarn-error.log*
 
 # macOS system files
 .DS_Store
+
+# Eval photos that may show people or documents
+eval/photos/private/

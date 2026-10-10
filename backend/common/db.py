@@ -70,11 +70,14 @@ def save_cached_analysis(image_hash: str, analysis: Dict[str, Any], table_name: 
     table = dynamodb.Table(table_name)
     cache_key = f"CACHE#{image_hash}"
     try:
+        # boto3 rejects Python floats, so convert to Decimal first. The timestamp
+        # lives in "cachedAt": "createdAt" is a key of the status-createdAt GSI
+        # (type String), so writing a number there is rejected by DynamoDB.
         table.put_item(
             Item={
                 "listingId": cache_key,
-                "analysis": analysis,
-                "createdAt": int(time.time()),
+                "analysis": _to_decimal(analysis),
+                "cachedAt": int(time.time()),
             }
         )
     except Exception:
@@ -107,6 +110,30 @@ def get_collector_by_id(collector_id: str, table_name: Optional[str] = None) -> 
         return response.get("Item")
     except Exception:
         return None
+
+
+def get_ewaste_points_from_db(table_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Reads e-waste drop-off points stored by seed.py in the Listings table
+    (status = EWASTE_POINT). The Lambda package only contains backend/, so the
+    seed/ JSON file is not available at runtime and DynamoDB is the source.
+    """
+    table_name = table_name or os.environ.get("LISTINGS_TABLE", "KabadiConnect-Listings-dev")
+    dynamodb = get_dynamodb_resource()
+    table = dynamodb.Table(table_name)
+    response = table.query(
+        IndexName="status-createdAt-index",
+        KeyConditionExpression=Key("status").eq("EWASTE_POINT"),
+    )
+    items = response.get("Items", [])
+    while "LastEvaluatedKey" in response:
+        response = table.query(
+            IndexName="status-createdAt-index",
+            KeyConditionExpression=Key("status").eq("EWASTE_POINT"),
+            ExclusiveStartKey=response["LastEvaluatedKey"],
+        )
+        items.extend(response.get("Items", []))
+    return items
 
 
 # ─── Listings ────────────────────────────────────────────────────────────────

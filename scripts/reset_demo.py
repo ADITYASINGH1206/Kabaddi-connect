@@ -21,7 +21,8 @@ def main():
         print(f"[!] Error: Seed script not found at {SEED_SCRIPT}")
         sys.exit(1)
 
-    cmd = [sys.executable, str(SEED_SCRIPT), "--reset"]
+    # Extra arguments (e.g. --region ap-southeast-2 --stack-name kabadiconnect) pass through to seed.py
+    cmd = [sys.executable, str(SEED_SCRIPT), "--reset", *sys.argv[1:]]
     print(f"Running: {' '.join(cmd)}")
 
     try:
