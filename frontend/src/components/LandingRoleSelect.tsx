@@ -1,122 +1,96 @@
 import React from 'react';
-import type { Language, UserRole } from '../types';
+import type { Language, MaterialRate, UserRole } from '../types';
 import { getTranslation } from '../i18n/translations';
-import { Camera, Truck, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ArrowRight, BarChart3, Camera, Truck } from 'lucide-react';
+import { Page } from './ui';
 
 interface LandingRoleSelectProps {
   lang: Language;
   onSelectRole: (role: UserRole) => void;
+  rates?: MaterialRate[];
 }
 
 export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
   lang,
   onSelectRole,
+  rates = [],
 }) => {
   const t = getTranslation(lang);
+  const board = rates.filter((r) => !r.hazardous).slice(0, 7);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8 max-w-lg mx-auto w-full">
-      {/* Hero Badge */}
-      <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium mb-6 animate-pulse">
-        <Sparkles className="w-3.5 h-3.5" />
-        <span>Amazon Bedrock Multimodal Vision</span>
-      </div>
+    <Page className="gap-6">
+      <h1 className="font-display text-[2rem] leading-[1.15] text-balance">{t.landingHeadline}</h1>
 
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl mb-3">
-          {t.appTitle}
-        </h2>
-        <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-          {t.tagline}
-        </p>
-      </div>
+      {/* The rate board: the thing every kabadiwala keeps in his head, written down */}
+      <section
+        aria-labelledby="rate-board"
+        className="board-in overflow-hidden rounded-md border-2 border-ink bg-sun"
+      >
+        <div className="flex items-baseline justify-between border-b-2 border-ink px-4 py-2">
+          <h2 id="rate-board" className="font-display text-xl">
+            {t.rateBoardTitle}
+          </h2>
+          <span className="text-sm font-bold">₹ / {t.kg}</span>
+        </div>
+        {board.length > 0 ? (
+          <ul className="divide-y-2 divide-ink/80 bg-sun-soft">
+            {board.map((r) => (
+              <li key={r.material} className="flex items-baseline justify-between gap-3 px-4 py-2">
+                <span className="text-base font-semibold">
+                  {lang === 'hi' ? r.label_hi : r.label_en}
+                </span>
+                <span className="shrink-0 font-display text-lg tabular-nums">
+                  {r.rate_low}–{r.rate_high}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="bg-sun-soft px-4 py-4 text-sm">{t.rateBoardEmpty}</p>
+        )}
+        <p className="border-t-2 border-ink px-4 py-2 text-sm">{t.rateBoardNote}</p>
+      </section>
 
-      <div className="w-full space-y-4">
-        <p className="text-xs uppercase tracking-wider font-semibold text-slate-500 text-center mb-2">
-          {t.rolePrompt}
-        </p>
+      <div className="flex flex-col gap-3">
+        <p className="text-base font-semibold text-muted">{t.rolePrompt}</p>
 
-        {/* Role 1: Household / Seller */}
         <button
           onClick={() => onSelectRole('household')}
-          className="w-full text-left p-5 rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-800/40 border border-slate-700/80 hover:border-emerald-500/60 shadow-xl hover:shadow-emerald-500/10 transition-all duration-200 active:scale-[0.99] group cursor-pointer"
+          className="flex min-h-[4.5rem] items-center gap-4 rounded-md border-2 border-ink bg-ink px-4 py-3 text-left text-white hover:bg-ink-2"
         >
-          <div className="flex items-start justify-between">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-105 transition-transform">
-              <Camera className="w-6 h-6" />
-            </div>
-            <span className="inline-flex items-center text-xs font-semibold text-emerald-400 group-hover:translate-x-0.5 transition-transform">
-              Start <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </span>
-          </div>
-
-          <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
-            {t.roleHousehold}
-          </h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            {t.roleHouseholdSub}
-          </p>
-
-          <div className="mt-4 pt-3 border-t border-slate-700/50 flex items-center text-[11px] text-slate-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 mr-1.5 shrink-0" />
-            <span>AI instant price range &bull; Transparent cash on pickup</span>
-          </div>
+          <Camera className="h-8 w-8 shrink-0 text-sun" aria-hidden />
+          <span className="flex-1">
+            <span className="block text-lg font-bold leading-tight">{t.roleHousehold}</span>
+            <span className="block text-sm text-white/80">{t.roleHouseholdSub}</span>
+          </span>
+          <ArrowRight className="h-6 w-6 shrink-0" aria-hidden />
         </button>
 
-        {/* Role 2: Collector */}
         <button
           onClick={() => onSelectRole('collector')}
-          className="w-full text-left p-5 rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-800/40 border border-slate-700/80 hover:border-teal-500/60 shadow-xl hover:shadow-teal-500/10 transition-all duration-200 active:scale-[0.99] group cursor-pointer"
+          className="flex min-h-[4.5rem] items-center gap-4 rounded-md border-2 border-ink bg-white px-4 py-3 text-left hover:bg-sun-soft"
         >
-          <div className="flex items-start justify-between">
-            <div className="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-4 group-hover:scale-105 transition-transform">
-              <Truck className="w-6 h-6" />
-            </div>
-            <span className="inline-flex items-center text-xs font-semibold text-teal-400 group-hover:translate-x-0.5 transition-transform">
-              Login Demo <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </span>
-          </div>
-
-          <h3 className="text-lg font-bold text-white mb-1 group-hover:text-teal-400 transition-colors">
-            {t.roleCollector}
-          </h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            {t.roleCollectorSub}
-          </p>
-
-          <div className="mt-4 pt-3 border-t border-slate-700/50 flex items-center text-[11px] text-slate-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-400 mr-1.5 shrink-0" />
-            <span>Geo-clustered pickups &bull; Waypoint route optimizer</span>
-          </div>
+          <Truck className="h-8 w-8 shrink-0" aria-hidden />
+          <span className="flex-1">
+            <span className="block text-lg font-bold leading-tight">{t.roleCollector}</span>
+            <span className="block text-sm text-muted">{t.roleCollectorSub}</span>
+          </span>
+          <ArrowRight className="h-6 w-6 shrink-0" aria-hidden />
         </button>
 
-        {/* Role 3: Public Impact Dashboard */}
         <button
           onClick={() => onSelectRole('impact')}
-          className="w-full text-left p-4 rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-800/20 border border-slate-700/60 hover:border-sky-500/60 shadow-lg hover:shadow-sky-500/10 transition-all duration-200 active:scale-[0.99] group cursor-pointer"
+          className="flex min-h-14 items-center gap-4 rounded-md border-2 border-line bg-transparent px-4 py-3 text-left hover:border-ink hover:bg-white"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
-                  {t.roleImpact}
-                </h4>
-                <p className="text-[11px] text-slate-400">
-                  {t.roleImpactSub}
-                </p>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
-          </div>
+          <BarChart3 className="h-6 w-6 shrink-0 text-muted" aria-hidden />
+          <span className="flex-1">
+            <span className="block text-base font-bold leading-tight">{t.roleImpact}</span>
+            <span className="block text-sm text-muted">{t.roleImpactSub}</span>
+          </span>
+          <ArrowRight className="h-5 w-5 shrink-0 text-muted" aria-hidden />
         </button>
       </div>
-
-      <div className="mt-8 text-center text-xs text-slate-500 px-4">
-        {t.indicativeNotice}
-      </div>
-    </div>
+    </Page>
   );
 };

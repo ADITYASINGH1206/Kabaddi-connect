@@ -9,28 +9,29 @@ import type {
   PickupRecord,
   RouteResponse,
 } from '../types';
+import { Check, Loader2, MapPin, Navigation, Phone } from 'lucide-react';
 import {
-  AlertCircle,
-  Check,
-  CheckCircle2,
-  Loader2,
-  MapPin,
-  Navigation,
-  Package,
-  Phone,
-  RefreshCw,
-  Route,
-  Truck,
-  User,
-  X,
-} from 'lucide-react';
+  btnPrimary,
+  btnSun,
+  Empty,
+  fieldInput,
+  inr,
+  materialName,
+  niceMax,
+  Notice,
+  Page,
+  RangeRuler,
+  RefreshRow,
+  Sheet,
+  Spinner,
+} from './ui';
 
 interface CollectorViewProps {
   lang: Language;
   onBack: () => void;
 }
 
-export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) => {
+export const CollectorView: React.FC<CollectorViewProps> = ({ lang }) => {
   const t = getTranslation(lang);
 
   // Collectors list & active selection
@@ -100,7 +101,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
       setRequests(normalized);
     } catch (err: any) {
       console.warn('Failed to load collector requests:', err);
-      setRequestError(err.message || 'Could not fetch requests');
+      setRequestError(t.fetchFailed);
     } finally {
       setLoadingRequests(false);
     }
@@ -161,7 +162,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
         setRequestError(t.alreadyAccepted);
         loadRequests(selectedCollectorId);
       } else {
-        setRequestError(err.message || 'Failed to accept listing');
+        setRequestError(t.acceptFailed);
       }
     } finally {
       setAcceptingId(null);
@@ -197,7 +198,7 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
     // Validate
     const invalid = actualItems.some((i) => isNaN(i.actual_kg) || i.actual_kg <= 0);
     if (invalid) {
-      setCompleteModalError('All weights must be greater than 0 kg');
+      setCompleteModalError(t.weightsError);
       return;
     }
 
@@ -213,469 +214,337 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
       loadPickups(selectedCollectorId);
     } catch (err: any) {
       console.error('Failed to complete pickup:', err);
-      setCompleteModalError(err.message || 'Failed to complete pickup');
+      setCompleteModalError(t.completeFailed);
     } finally {
       setCompleting(false);
     }
   };
 
   const selectedCollector = collectors.find((c) => c.collectorId === selectedCollectorId);
+  const activeCount = pickups.filter((p) => p.status === 'ACCEPTED').length;
+
+  const tabs = [
+    { id: 'requests', label: t.requestsTab },
+    { id: 'pickups', label: t.activePickupsTab },
+    { id: 'route', label: t.routeTab },
+  ] as const;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start px-4 py-5 max-w-lg mx-auto w-full">
-      {/* Top Header */}
-      <div className="w-full flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Truck className="w-5 h-5 text-emerald-400" />
-            {t.collectorTitle}
-          </h2>
-          <span className="text-xs text-slate-400 block mt-0.5">
-            {selectedCollector ? `${selectedCollector.name} (${selectedCollector.areaName})` : ''}
-          </span>
-        </div>
-        <button
-          onClick={onBack}
-          className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
-        >
-          {t.back}
-        </button>
+    <Page className="gap-4">
+      <div>
+        <h1 className="font-display text-3xl leading-tight">{t.collectorTitle}</h1>
+        {selectedCollector && (
+          <p className="text-base text-muted">
+            {selectedCollector.name} · {selectedCollector.areaName}
+          </p>
+        )}
       </div>
 
-      {/* Demo Collector Selector */}
-      <div className="w-full bg-slate-800/80 border border-slate-700 rounded-xl p-3 mb-4">
-        <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-          <User className="w-3 h-3 text-emerald-400" />
+      <div>
+        <label htmlFor="collector-select" className="mb-1.5 block text-sm font-semibold text-muted">
           {t.selectCollectorProfile}
         </label>
         <select
+          id="collector-select"
           value={selectedCollectorId}
           onChange={(e) => handleSelectCollector(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-medium"
+          className={fieldInput}
         >
           {collectors.map((c) => (
             <option key={c.collectorId} value={c.collectorId}>
-              {c.name} — {c.areaName} {c.accepts_ewaste ? '(E-Waste)' : ''}
+              {c.name} — {c.areaName} {c.accepts_ewaste ? `(${t.ewasteBadge})` : ''}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="w-full grid grid-cols-3 gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700 mb-5">
-        <button
-          onClick={() => setActiveTab('requests')}
-          className={`py-2 text-xs font-bold rounded-lg transition-all ${
-            activeTab === 'requests'
-              ? 'bg-emerald-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {t.requestsTab}
-        </button>
-        <button
-          onClick={() => setActiveTab('pickups')}
-          className={`py-2 text-xs font-bold rounded-lg transition-all ${
-            activeTab === 'pickups'
-              ? 'bg-emerald-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {t.activePickupsTab}
-        </button>
-        <button
-          onClick={() => setActiveTab('route')}
-          className={`py-2 text-xs font-bold rounded-lg transition-all ${
-            activeTab === 'route'
-              ? 'bg-emerald-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {t.routeTab}
-        </button>
+      {/* Tabs */}
+      <div role="tablist" aria-label={t.collectorTitle} className="grid grid-cols-3 border-b-2 border-ink">
+        {tabs.map((tab) => {
+          const on = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              id={`tab-${tab.id}`}
+              aria-selected={on}
+              aria-controls={`panel-${tab.id}`}
+              onClick={() => setActiveTab(tab.id)}
+              className={`-mb-0.5 min-h-12 rounded-t-md border-2 px-1 text-base font-bold leading-tight ${
+                on ? 'border-ink border-b-sun bg-sun' : 'border-transparent text-muted hover:text-ink'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* TAB 1: REQUESTS */}
+      {/* REQUESTS */}
       {activeTab === 'requests' && (
-        <div className="w-full space-y-3">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-slate-400">
-              {requests.length} open orders available
-            </span>
-            <button
-              onClick={() => loadRequests(selectedCollectorId)}
-              disabled={loadingRequests}
-              className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-            >
-              <RefreshCw className={`w-3 h-3 ${loadingRequests ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          </div>
+        <div role="tabpanel" id="panel-requests" aria-labelledby="tab-requests" className="flex flex-col gap-3">
+          <RefreshRow
+            refreshLabel={t.refresh}
+            text={`${requests.length} ${t.openOrders}`}
+            loading={loadingRequests}
+            onClick={() => loadRequests(selectedCollectorId)}
+          />
 
-          {requestError && (
-            <div className="w-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl p-3 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{requestError}</span>
-            </div>
-          )}
+          {requestError && <Notice tone="error">{requestError}</Notice>}
 
           {loadingRequests && requests.length === 0 ? (
-            <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-              <Loader2 className="w-7 h-7 animate-spin text-emerald-400 mb-2" />
-              <span className="text-xs">Finding high-value scrap nearby...</span>
-            </div>
+            <Spinner text={t.findingScrap} />
           ) : requests.length === 0 ? (
-            <div className="py-12 text-center bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6">
-              <Package className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">{t.noRequests}</p>
-            </div>
+            <Empty text={t.noRequests} />
           ) : (
-            requests.map((req) => (
-              <div
-                key={req.listingId}
-                className="w-full bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-lg hover:border-slate-600 transition-all"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">
-                        {req.sellerName || 'Household'}
-                      </span>
-                      {req.seeded && (
-                        <span className="text-[9px] bg-amber-500/15 text-amber-300 px-1.5 py-0.5 rounded font-semibold border border-amber-500/30 tracking-wide uppercase">
-                          {lang === 'hi' ? 'डेमो' : 'Demo'}
-                        </span>
-                      )}
-                      {req.worthIt ? (
-                        <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">
-                          {t.worthItTag}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full font-semibold">
-                          {t.lowValueTag}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-500" />
-                      {req.address}
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-sm font-extrabold text-emerald-400 block">
-                      ₹{req.estimated_value_mid}
-                    </span>
-                    <span className="text-[11px] text-slate-400">
-                      ~{req.distanceKm} km away
-                    </span>
-                  </div>
-                </div>
-
-                {/* Materials badges */}
-                <div className="flex flex-wrap gap-1.5 my-3">
-                  {req.materials.map((m) => (
-                    <span
-                      key={m}
-                      className="text-[10px] font-medium bg-slate-900 border border-slate-700/80 text-slate-300 px-2 py-0.5 rounded-lg capitalize"
+            <ul className="flex flex-col gap-3">
+              {requests.map((req) => (
+                <li key={req.listingId} className="overflow-hidden rounded-md border-2 border-ink bg-card">
+                  <div className="flex items-stretch">
+                    <div
+                      className={`flex w-28 shrink-0 flex-col items-center justify-center border-r-2 border-dashed border-ink px-2 py-3 text-center ${
+                        req.worthIt ? 'bg-sun' : 'bg-paper'
+                      }`}
                     >
-                      {m.replace(/_/g, ' ')}
-                    </span>
-                  ))}
-                  <span className="text-[10px] text-slate-400 py-0.5 font-semibold">
-                    ({req.total_kg_range.low}–{req.total_kg_range.high} kg)
-                  </span>
-                </div>
-
-                {/* Accept button */}
-                <button
-                  onClick={() => handleAcceptListing(req.listingId)}
-                  disabled={acceptingId === req.listingId}
-                  className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {acceptingId === req.listingId ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      {t.accepting}
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      {t.acceptRequest}
-                    </>
-                  )}
-                </button>
-              </div>
-            ))
+                      <span className="font-display text-3xl leading-none tabular-nums">
+                        {inr(req.estimated_value_mid)}
+                      </span>
+                      <span className="mt-1 text-sm font-semibold leading-tight">
+                        {req.worthIt ? t.worthItTag : t.lowValueTag}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1 p-3">
+                      <p className="flex flex-wrap items-center gap-x-2 text-base font-bold leading-tight">
+                        {req.sellerName || t.household}
+                        {req.seeded && (
+                          <span className="rounded-sm border border-ink px-1.5 text-sm font-semibold">
+                            {t.demoTag}
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-0.5 flex items-start gap-1 text-sm text-muted">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                        <span>{req.address}</span>
+                      </p>
+                      <p className="mt-1 text-sm font-semibold">
+                        ~{req.distanceKm} km {t.away}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-t-2 border-ink px-3 py-2.5">
+                    <p className="text-sm">
+                      <span className="capitalize">{req.materials.map(materialName).join(', ')}</span> ·{' '}
+                      <span className="font-semibold">
+                        {req.total_kg_range.low}–{req.total_kg_range.high} {t.kg}
+                      </span>
+                    </p>
+                    <button
+                      onClick={() => handleAcceptListing(req.listingId)}
+                      disabled={acceptingId === req.listingId}
+                      className={`${btnPrimary} mt-2.5`}
+                    >
+                      {acceptingId === req.listingId ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                          {t.accepting}
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-5 w-5" aria-hidden />
+                          {t.acceptRequest}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
 
-      {/* TAB 2: ACTIVE PICKUPS */}
+      {/* ACTIVE PICKUPS */}
       {activeTab === 'pickups' && (
-        <div className="w-full space-y-3">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-slate-400">
-              {pickups.filter((p) => p.status === 'ACCEPTED').length} active accepted pickups
-            </span>
-            <button
-              onClick={() => loadPickups(selectedCollectorId)}
-              disabled={loadingPickups}
-              className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-            >
-              <RefreshCw className={`w-3 h-3 ${loadingPickups ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          </div>
+        <div role="tabpanel" id="panel-pickups" aria-labelledby="tab-pickups" className="flex flex-col gap-3">
+          <RefreshRow
+            refreshLabel={t.refresh}
+            text={`${activeCount} ${t.activeCount}`}
+            loading={loadingPickups}
+            onClick={() => loadPickups(selectedCollectorId)}
+          />
 
           {loadingPickups && pickups.length === 0 ? (
-            <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-              <Loader2 className="w-7 h-7 animate-spin text-emerald-400 mb-2" />
-              <span className="text-xs">Loading active pickups...</span>
-            </div>
+            <Spinner text={t.loadingPickups} />
           ) : pickups.length === 0 ? (
-            <div className="py-12 text-center bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6">
-              <Truck className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">{t.noPickups}</p>
-            </div>
+            <Empty text={t.noPickups} />
           ) : (
-            pickups.map((p) => (
-              <div
-                key={p.pickupId}
-                className="w-full bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-lg"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <span className="text-xs font-bold text-white block">
-                      {p.sellerName}
+            <ul className="flex flex-col gap-3">
+              {pickups.map((p) => (
+                <li key={p.pickupId} className="rounded-md border-2 border-ink bg-card p-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold leading-tight">{p.sellerName}</p>
+                      <p className="text-sm text-muted">{p.address}</p>
+                      {p.sellerPhone && (
+                        <a
+                          href={`tel:${p.sellerPhone}`}
+                          className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-base font-bold underline underline-offset-4"
+                        >
+                          <Phone className="h-4 w-4" aria-hidden />
+                          {p.sellerPhone}
+                        </a>
+                      )}
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-sm px-2 text-sm font-bold ${
+                        p.status === 'COMPLETED' ? 'bg-ink text-white' : 'bg-sun'
+                      }`}
+                    >
+                      {p.status === 'COMPLETED' ? t.statusCompletedShort : t.statusAcceptedShort}
                     </span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      {p.address}
-                    </span>
-                    {p.sellerPhone && (
-                      <a
-                        href={`tel:${p.sellerPhone}`}
-                        className="text-[11px] text-emerald-400 font-bold hover:underline flex items-center gap-1 mt-1"
-                      >
-                        <Phone className="w-3 h-3" />
-                        {p.sellerPhone}
-                      </a>
-                    )}
                   </div>
 
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      p.status === 'COMPLETED'
-                        ? 'bg-blue-500/20 text-blue-400'
-                        : 'bg-emerald-500/20 text-emerald-400'
-                    }`}
-                  >
-                    {p.status}
-                  </span>
-                </div>
-
-                {p.status === 'ACCEPTED' ? (
-                  <button
-                    onClick={() => handleOpenCompleteModal(p)}
-                    className="w-full mt-3 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    {t.completePickupAction}
-                  </button>
-                ) : (
-                  <div className="mt-3 pt-2 border-t border-slate-700/50 flex justify-between text-xs">
-                    <span className="text-slate-400">Payout Paid:</span>
-                    <span className="font-bold text-emerald-400">₹{p.payout}</span>
-                  </div>
-                )}
-              </div>
-            ))
+                  {p.status === 'ACCEPTED' ? (
+                    <button onClick={() => handleOpenCompleteModal(p)} className={`${btnSun} mt-3`}>
+                      <Check className="h-5 w-5" aria-hidden />
+                      {t.completePickupAction}
+                    </button>
+                  ) : (
+                    <div className="mt-3 flex items-baseline justify-between border-t-2 border-dashed border-line pt-2">
+                      <span className="text-base text-muted">{t.payoutPaid}</span>
+                      <span className="font-display text-2xl text-leaf">{inr(p.payout ?? 0)}</span>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
 
-      {/* TAB 3: ROUTE OPTIMIZATION */}
+      {/* ROUTE */}
       {activeTab === 'route' && (
-        <div className="w-full space-y-4">
+        <div role="tabpanel" id="panel-route" aria-labelledby="tab-route" className="flex flex-col gap-4">
           {loadingRoute ? (
-            <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-              <Loader2 className="w-7 h-7 animate-spin text-emerald-400 mb-2" />
-              <span className="text-xs">Optimizing nearest stops & route...</span>
-            </div>
-          ) : routeData ? (
+            <Spinner text={t.buildingRoute} />
+          ) : routeData && routeData.stops.length > 0 ? (
             <>
-              {/* Route Summary KPI Card */}
-              <div className="w-full bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/40 rounded-2xl p-4 shadow-xl">
-                <div className="flex items-center gap-2 font-bold text-emerald-300 text-xs mb-3">
-                  <Route className="w-4 h-4 text-emerald-400" />
-                  <span>{t.routeOptimizationTitle}</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                      {t.stopsCount}
-                    </span>
-                    <span className="text-base font-extrabold text-white">
-                      {routeData.stopsCount}
-                    </span>
+              <section className="rounded-md border-2 border-ink bg-sun p-4">
+                <h2 className="font-display text-xl">{t.routeOptimizationTitle}</h2>
+                <dl className="mt-2 grid grid-cols-3 gap-2">
+                  <div>
+                    <dt className="text-sm">{t.stopsCount}</dt>
+                    <dd className="font-display text-3xl leading-tight tabular-nums">{routeData.stopsCount}</dd>
                   </div>
-                  <div className="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                      {t.totalDistance}
-                    </span>
-                    <span className="text-base font-extrabold text-emerald-400">
-                      {routeData.totalKm} km
-                    </span>
+                  <div>
+                    <dt className="text-sm">{t.totalDistance}</dt>
+                    <dd className="font-display text-3xl leading-tight tabular-nums">{routeData.totalKm} km</dd>
                   </div>
-                  <div className="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                      {t.distanceSaved}
-                    </span>
-                    <span className="text-base font-extrabold text-amber-400">
-                      {routeData.kmSaved} km
-                    </span>
+                  <div>
+                    <dt className="text-sm">{t.distanceSaved}</dt>
+                    <dd className="font-display text-3xl leading-tight tabular-nums">{routeData.kmSaved} km</dd>
                   </div>
-                </div>
+                </dl>
+                <p className="mt-3 border-t-2 border-ink pt-2 text-sm">
+                  {t.estTripTime}: ~{routeData.totalMin} min · {t.separateTripsKm}: {routeData.naiveKm} km
+                </p>
+              </section>
 
-                <div className="mt-3 flex justify-between items-center text-[11px] text-slate-400 px-1">
-                  <span>Est. Trip Time: ~{routeData.totalMin} mins</span>
-                  <span>Naive Round Trips: {routeData.naiveKm} km</span>
-                </div>
-              </div>
-
-              {/* Numbered Stops List */}
-              <div className="w-full space-y-2.5">
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-400 block px-1">
-                  Ordered Pickup Stops
-                </span>
-
-                {routeData.stops.map((stop) => (
-                  <div
-                    key={stop.listingId}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-2xl p-3.5 flex items-start gap-3 shadow-md"
-                  >
-                    <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      #{stop.stopIndex}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <span className="text-xs font-bold text-white truncate">
-                          {stop.sellerName}
-                        </span>
-                        <span className="text-[10px] text-emerald-400 font-semibold shrink-0">
-                          +{stop.distanceFromPrevKm} km
-                        </span>
+              <div>
+                <h2 className="mb-3 font-display text-2xl">{t.orderedStops}</h2>
+                <ol className="relative flex flex-col gap-3">
+                  <span aria-hidden className="absolute bottom-6 left-[1.1rem] top-6 w-0.5 bg-ink" />
+                  {routeData.stops.map((stop) => (
+                    <li key={stop.listingId} className="relative flex items-start gap-3">
+                      <span className="z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-sun font-display text-lg">
+                        {stop.stopIndex}
+                      </span>
+                      <div className="min-w-0 flex-1 rounded-md border-2 border-line bg-white p-3">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className="truncate text-base font-bold">{stop.sellerName}</p>
+                          <p className="shrink-0 text-sm font-semibold">+{stop.distanceFromPrevKm} km</p>
+                        </div>
+                        <p className="text-sm text-muted">{stop.address}</p>
+                        <div className="mt-1.5 flex items-center justify-between gap-2">
+                          <span className="text-sm">
+                            {t.etaShort} ~{stop.etaMin} min
+                          </span>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-md border-2 border-ink px-3 text-sm font-bold hover:bg-sun-soft"
+                          >
+                            <Navigation className="h-4 w-4" aria-hidden />
+                            {t.navigateButton}
+                          </a>
+                        </div>
                       </div>
-
-                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                        {stop.address}
-                      </p>
-
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400">
-                          ETA: ~{stop.etaMin} mins
-                        </span>
-
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
-                        >
-                          <Navigation className="w-3 h-3" />
-                          {t.navigateButton}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    </li>
+                  ))}
+                </ol>
               </div>
+              <p className="text-sm text-muted">{t.routeNote}</p>
             </>
           ) : (
-            <div className="py-12 text-center bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6">
-              <Route className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400">
-                Accept pickups first to generate an optimized cluster route.
-              </p>
-            </div>
+            <Empty text={t.routeEmpty} />
           )}
         </div>
       )}
 
-      {/* COMPLETE PICKUP MODAL */}
+      {/* COMPLETE PICKUP */}
       {activePickupToComplete && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-5 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                {t.completePickupAction}
-              </h3>
-              <button
-                onClick={() => setActivePickupToComplete(null)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
+        <Sheet
+          title={completeSuccess ? t.payoutConfirmed : t.completePickupAction}
+          closeLabel={t.cancel}
+          onClose={() => setActivePickupToComplete(null)}
+        >
+          {completeSuccess ? (
+            <div className="flex flex-col gap-4">
+              <div className="rounded-md border-2 border-ink bg-sun p-4">
+                <p className="text-base font-semibold">{t.payoutAmount}</p>
+                <p className="font-display text-5xl leading-tight tabular-nums">{inr(completeSuccess.payout)}</p>
+                <p className="mt-2 border-t-2 border-ink pt-2 text-base">
+                  {t.estimateAccuracy}: <span className="font-bold">{completeSuccess.estimateErrorPct}%</span>{' '}
+                  {t.errorVsAi}
+                </p>
+              </div>
+              <button onClick={() => setActivePickupToComplete(null)} className={btnPrimary}>
+                {t.done}
               </button>
             </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <p className="text-base text-muted">{t.actualWeightPrompt}</p>
+              {completeModalError && <Notice tone="error">{completeModalError}</Notice>}
 
-            {completeSuccess ? (
-              <div className="text-center py-4 space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/40">
-                  <Check className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-bold text-white">{t.payoutConfirmed}</h4>
-
-                <div className="bg-slate-800/80 rounded-2xl p-4 text-left border border-slate-700 space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-400">{t.payoutAmount}:</span>
-                    <span className="text-xl font-extrabold text-emerald-400">
-                      ₹{completeSuccess.payout}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-400">{t.estimateAccuracy}:</span>
-                    <span className="font-bold text-amber-400">
-                      {completeSuccess.estimateErrorPct}% error vs AI
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setActivePickupToComplete(null)}
-                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors"
-                >
-                  Done
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-xs text-slate-400">{t.actualWeightPrompt}</p>
-
-                {completeModalError && (
-                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-                    {completeModalError}
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {activePickupToComplete.items.map((item) => (
-                    <div
-                      key={item.material}
-                      className="bg-slate-800/70 p-3 rounded-xl border border-slate-700/70"
-                    >
-                      <div className="flex justify-between text-xs font-semibold text-white mb-2 capitalize">
-                        <span>{item.material.replace(/_/g, ' ')}</span>
-                        <span className="text-slate-400">
-                          Est: {item.weight_kg_low}–{item.weight_kg_high} kg
-                        </span>
+              <ul className="flex flex-col gap-3">
+                {activePickupToComplete.items.map((item) => {
+                  const v = actualWeights[item.material] ?? 0;
+                  const id = `actual-${item.material}`;
+                  return (
+                    <li key={item.material} className="rounded-md border-2 border-ink bg-white p-3">
+                      <label htmlFor={id} className="text-lg font-bold capitalize">
+                        {materialName(item.material)}
+                      </label>
+                      <div className="mt-3">
+                        <RangeRuler
+                          max={niceMax(item.weight_kg_high, v)}
+                          low={item.weight_kg_low}
+                          high={item.weight_kg_high}
+                          value={v}
+                          valueLabel={`${v} ${t.kg}`}
+                          ariaLabel={`${t.scaleReading}: ${materialName(item.material)}`}
+                        />
                       </div>
-
+                      <p className="mb-2 text-sm text-muted">
+                        {t.estShort}: {item.weight_kg_low}–{item.weight_kg_high} {t.kg}
+                      </p>
                       <div className="flex items-center gap-2">
                         <input
+                          id={id}
                           type="number"
+                          inputMode="decimal"
                           step="0.1"
                           min="0.1"
                           max="500"
@@ -686,37 +555,33 @@ export const CollectorView: React.FC<CollectorViewProps> = ({ lang, onBack }) =>
                               [item.material]: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-bold"
-                          placeholder="e.g. 5.5"
+                          className={`${fieldInput} text-lg font-bold`}
+                          placeholder="5.5"
                         />
-                        <span className="text-xs text-slate-400 font-medium">kg</span>
+                        <span className="text-base font-semibold">{t.kg}</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-                <button
-                  onClick={handleSubmitComplete}
-                  disabled={completing}
-                  className="w-full mt-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {completing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Calculating...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4" />
-                      {t.calculatePayout}
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+              <button onClick={handleSubmitComplete} disabled={completing} className={btnSun}>
+                {completing ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                    {t.calculating}
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-5 w-5" aria-hidden />
+                    {t.calculatePayout}
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </Sheet>
       )}
-    </div>
+    </Page>
   );
 };

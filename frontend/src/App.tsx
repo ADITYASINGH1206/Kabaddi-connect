@@ -8,6 +8,8 @@ import { LandingRoleSelect } from './components/LandingRoleSelect';
 import { MatchedView } from './components/MatchedView';
 import { Navbar } from './components/Navbar';
 import { PickupDetails } from './components/PickupDetails';
+import { StepBar } from './components/ui';
+import { getTranslation } from './i18n/translations';
 import type {
   CreateListingResponse,
   DetectedItem,
@@ -44,6 +46,13 @@ export function App() {
       .then((data) => setRates(data))
       .catch((err) => console.error('Rates fetch error:', err));
   }, []);
+
+  const t = getTranslation(lang);
+
+  // Keep the document language in step with the toggle (screen readers, Devanagari shaping)
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const handleToggleLang = () => {
     setLang((prev) => {
@@ -102,7 +111,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <div className="flex min-h-screen flex-col bg-paper font-sans text-ink">
       <Navbar
         lang={lang}
         onToggleLang={handleToggleLang}
@@ -116,6 +125,7 @@ export function App() {
           <LandingRoleSelect
             lang={lang}
             onSelectRole={(selectedRole) => setRole(selectedRole)}
+            rates={rates}
           />
         )}
 
@@ -132,6 +142,10 @@ export function App() {
         {/* Household View */}
         {role === 'household' && (
           <>
+            <StepBar
+              labels={[t.stepSnap, t.stepReview, t.stepDetails, t.stepMatched]}
+              current={['snap', 'review', 'pickup_details', 'matched'].indexOf(householdStep)}
+            />
             {householdStep === 'snap' && (
               <HouseholdSnap
                 lang={lang}

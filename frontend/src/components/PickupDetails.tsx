@@ -2,16 +2,8 @@ import React, { useState } from 'react';
 import { ApiClient } from '../api/client';
 import { getTranslation } from '../i18n/translations';
 import type { CreateListingResponse, DetectedItem, Language } from '../types';
-import {
-  Calendar,
-  Clock,
-  Compass,
-  Loader2,
-  MapPin,
-  Phone,
-  Send,
-  User,
-} from 'lucide-react';
+import { Compass, Loader2, Send } from 'lucide-react';
+import { btnGhost, btnSun, fieldInput, inr, Notice, Page } from './ui';
 
 interface PickupDetailsProps {
   lang: Language;
@@ -49,6 +41,7 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
     lng: 77.1215,
   });
   const [detectingLoc, setDetectingLoc] = useState(false);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
   const [slot, setSlot] = useState<'morning' | 'afternoon' | 'evening'>('morning');
   const [preferredDate, setPreferredDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
@@ -57,8 +50,9 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleUseLocation = () => {
+    setGeoMsg(null);
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
+      setGeoMsg(t.geoUnsupported);
       return;
     }
     setDetectingLoc(true);
@@ -70,21 +64,13 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
           lng: Number(pos.coords.longitude.toFixed(4)),
         });
         if (!address) {
-          setAddress(
-            lang === 'hi'
-              ? 'वर्तमान जीपीएस स्थान (उत्तर-पश्चिम दिल्ली)'
-              : 'Current GPS Location (NW Delhi)'
-          );
+          setAddress(t.gpsAddress);
         }
       },
       (err) => {
         setDetectingLoc(false);
         console.warn('Geolocation failed:', err);
-        alert(
-          lang === 'hi'
-            ? 'लोकेशन नहीं मिली। कृपया सूची से अपना इलाका चुनें।'
-            : 'Could not access GPS. Please select a nearby area below.'
-        );
+        setGeoMsg(t.geoFailed);
       },
       { timeout: 8000 }
     );
@@ -93,6 +79,7 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
   const handleAreaSelect = (area: (typeof NW_DELHI_AREAS)[0]) => {
     setCoords({ lat: area.lat, lng: area.lng });
     setAddress(area.name + ', New Delhi');
+    setGeoMsg(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,197 +115,187 @@ export const PickupDetails: React.FC<PickupDetailsProps> = ({
       onListingCreated(res);
     } catch (err: any) {
       console.error('Failed to create listing:', err);
-      setErrorMsg(err.message || 'Failed to submit pickup request. Please retry.');
+      setErrorMsg(err?.message || t.errorFailedSubmit);
       setSubmitting(false);
     }
   };
 
+  const totalKg = items.reduce((acc, curr) => acc + (curr.weight_kg_user || 0), 0);
+  const slots = [
+    { id: 'morning', label: t.slotMorning },
+    { id: 'afternoon', label: t.slotAfternoon },
+    { id: 'evening', label: t.slotEvening },
+  ] as const;
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-start px-4 py-6 max-w-lg mx-auto w-full">
-      <div className="w-full text-center mb-6">
-        <h2 className="text-2xl font-bold text-white tracking-tight">
-          {t.pickupDetailsTitle}
-        </h2>
-        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-          {t.pickupDetailsSubtitle}
+    <Page className="gap-5">
+      <div>
+        <h1 className="font-display text-3xl leading-tight">{t.pickupDetailsTitle}</h1>
+        <p className="mt-1.5 text-base text-muted">{t.pickupDetailsSubtitle}</p>
+      </div>
+
+      {/* Receipt-style summary */}
+      <section className="rounded-md border-2 border-ink bg-sun p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-base font-semibold">{t.yourScrap}</span>
+          <span className="text-sm font-semibold">
+            {items.length} · {Number(totalKg.toFixed(1))} {t.kg}
+          </span>
+        </div>
+        <p className="font-display text-3xl tabular-nums">
+          {inr(priceRange.low)} – {inr(priceRange.high)}
         </p>
-      </div>
+      </section>
 
-      {/* Summary card */}
-      <div className="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 mb-5 flex justify-between items-center shadow-lg">
+      {errorMsg && <Notice tone="error">{errorMsg}</Notice>}
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-            {t.estimatedValue}
-          </span>
-          <span className="text-xl font-extrabold text-emerald-400">
-            ₹{priceRange.low} – ₹{priceRange.high}
-          </span>
-        </div>
-        <div className="text-right">
-          <span className="text-[11px] text-slate-400 block font-medium">
-            {items.length} {t.materialsFound}
-          </span>
-          <span className="text-xs text-slate-300 font-bold">
-            ~{items.reduce((acc, curr) => acc + (curr.weight_kg_user || 0), 0)} kg
-          </span>
-        </div>
-      </div>
-
-      {errorMsg && (
-        <div className="w-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl p-3 mb-4">
-          {errorMsg}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="w-full space-y-4">
-        {/* Name and Phone */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-slate-400" />
-              {t.yourName}
-            </label>
-            <input
-              type="text"
-              required
-              value={sellerName}
-              onChange={(e) => setSellerName(e.target.value)}
-              placeholder="e.g. Rahul Sharma"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400" />
-              {t.yourPhone}
-            </label>
-            <input
-              type="tel"
-              required
-              value={sellerPhone}
-              onChange={(e) => setSellerPhone(e.target.value)}
-              placeholder="+91 98765 43210"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
+          <label htmlFor="seller-name" className="mb-1.5 block text-base font-bold">
+            {t.yourName}
+          </label>
+          <input
+            id="seller-name"
+            type="text"
+            required
+            autoComplete="name"
+            value={sellerName}
+            onChange={(e) => setSellerName(e.target.value)}
+            placeholder={t.namePlaceholder}
+            className={fieldInput}
+          />
         </div>
 
-        {/* Address */}
         <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+          <label htmlFor="seller-phone" className="mb-1.5 block text-base font-bold">
+            {t.yourPhone}
+          </label>
+          <input
+            id="seller-phone"
+            type="tel"
+            inputMode="tel"
+            required
+            autoComplete="tel"
+            value={sellerPhone}
+            onChange={(e) => setSellerPhone(e.target.value)}
+            placeholder="+91 98765 43210"
+            className={fieldInput}
+          />
+        </div>
+
+        <div>
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <label htmlFor="seller-address" className="text-base font-bold">
               {t.addressLabel}
             </label>
             <button
               type="button"
               onClick={handleUseLocation}
               disabled={detectingLoc}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-bold underline-offset-4 hover:underline disabled:opacity-60"
             >
               {detectingLoc ? (
-                <>
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  {t.detectingLocation}
-                </>
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
-                <>
-                  <Compass className="w-3 h-3" />
-                  {t.useMyLocation}
-                </>
+                <Compass className="h-4 w-4" aria-hidden />
               )}
+              {detectingLoc ? t.detectingLocation : t.useMyLocation}
             </button>
           </div>
           <textarea
+            id="seller-address"
             required
             rows={2}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder={t.addressPlaceholder}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+            className={`${fieldInput} resize-none`}
           />
-
-          {/* Fallback Neighborhood Chips */}
-          <div className="mt-2">
-            <span className="text-[10px] text-slate-400 font-semibold block mb-1.5">
-              {t.selectAreaFallback}
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {NW_DELHI_AREAS.map((a) => (
-                <button
-                  key={a.name}
-                  type="button"
-                  onClick={() => handleAreaSelect(a)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] text-slate-300 transition-colors"
-                >
-                  {a.name}
-                </button>
-              ))}
+          {geoMsg && (
+            <div className="mt-2">
+              <Notice tone="warn">{geoMsg}</Notice>
             </div>
-          </div>
+          )}
+
+          <fieldset className="mt-3">
+            <legend className="mb-1.5 text-sm font-semibold text-muted">{t.selectAreaFallback}</legend>
+            <div className="flex flex-wrap gap-2">
+              {NW_DELHI_AREAS.map((a) => {
+                const on = address.startsWith(a.name);
+                return (
+                  <button
+                    key={a.name}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => handleAreaSelect(a)}
+                    className={`min-h-11 rounded-md border-2 px-3 text-sm font-semibold ${
+                      on ? 'border-ink bg-ink text-white' : 'border-line bg-white hover:border-ink'
+                    }`}
+                  >
+                    {a.name}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
         </div>
 
-        {/* Date and Time slot */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              {t.preferredDate}
-            </label>
-            <input
-              type="date"
-              value={preferredDate}
-              onChange={(e) => setPreferredDate(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              {t.pickupSlot}
-            </label>
-            <select
-              value={slot}
-              onChange={(e) => setSlot(e.target.value as any)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-            >
-              <option value="morning">{t.slotMorning}</option>
-              <option value="afternoon">{t.slotAfternoon}</option>
-              <option value="evening">{t.slotEvening}</option>
-            </select>
-          </div>
+        <div>
+          <label htmlFor="pickup-date" className="mb-1.5 block text-base font-bold">
+            {t.preferredDate}
+          </label>
+          <input
+            id="pickup-date"
+            type="date"
+            value={preferredDate}
+            onChange={(e) => setPreferredDate(e.target.value)}
+            className={fieldInput}
+          />
         </div>
 
-        {/* Buttons */}
-        <div className="pt-4 flex gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold transition-colors"
-          >
+        <fieldset>
+          <legend className="mb-1.5 text-base font-bold">{t.pickupSlot}</legend>
+          <div className="grid gap-2">
+            {slots.map((s) => (
+              <label
+                key={s.id}
+                className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-md border-2 px-3 py-2 text-base font-semibold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink ${
+                  slot === s.id ? 'border-ink bg-sun' : 'border-line bg-white hover:border-ink'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="slot"
+                  value={s.id}
+                  checked={slot === s.id}
+                  onChange={() => setSlot(s.id)}
+                  className="h-5 w-5 accent-ink"
+                />
+                {s.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onBack} className={btnGhost}>
             {t.back}
           </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="flex-2 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
-          >
+          <button type="submit" disabled={submitting} className={`${btnSun} flex-1`}>
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                 {t.submittingListing}
               </>
             ) : (
               <>
-                <Send className="w-4 h-4" />
+                <Send className="h-5 w-5" aria-hidden />
                 {t.submitListing}
               </>
             )}
           </button>
         </div>
       </form>
-    </div>
+    </Page>
   );
 };
