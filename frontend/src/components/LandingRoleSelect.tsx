@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Language, MaterialRate, UserRole } from '../types';
 import { getTranslation } from '../i18n/translations';
-import { ArrowRight, BarChart3, Camera, Truck } from 'lucide-react';
+import { ArrowRight, BarChart3, Camera, ShieldAlert, Truck } from 'lucide-react';
 import { Page } from './ui';
 
 interface LandingRoleSelectProps {
@@ -91,6 +91,57 @@ export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
           <ArrowRight className="h-5 w-5 shrink-0 text-muted" aria-hidden />
         </button>
       </div>
+
+      {/* How it works: a real sequence, so the numbers carry meaning */}
+      <section aria-labelledby="how" className="lg:col-span-2 lg:mt-6">
+        <h2 id="how" className="mb-3 font-display text-2xl">
+          {t.howTitle}
+        </h2>
+        <ol className="grid gap-3 lg:grid-cols-3 lg:gap-5">
+          {[
+            [t.how1Title, t.how1Body],
+            [t.how2Title, t.how2Body],
+            [t.how3Title, t.how3Body],
+          ].map(([title, body], i) => (
+            <li key={title} className="flex gap-3 rounded-md border-2 border-ink bg-white p-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-sun font-display text-lg">
+                {i + 1}
+              </span>
+              <div>
+                <h3 className="text-lg font-bold leading-tight">{title}</h3>
+                <p className="mt-1 text-base text-muted">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div className="flex gap-3 rounded-md border-l-8 border-brick bg-brick-soft p-4 lg:col-span-2">
+        <ShieldAlert className="mt-0.5 h-6 w-6 shrink-0 text-brick" aria-hidden />
+        <div>
+          <p className="text-base font-bold">{t.safeTitle}</p>
+          <p className="text-base">{t.safeBody}</p>
+        </div>
+      </div>
+
+      <section aria-labelledby="aws" className="lg:col-span-2">
+        <h2 id="aws" className="mb-3 font-display text-2xl">
+          {t.awsTitle}
+        </h2>
+        <dl className="grid gap-px overflow-hidden rounded-md border-2 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [t.awsBedrock, t.awsBedrockBody],
+            [t.awsApi, t.awsApiBody],
+            [t.awsDynamo, t.awsDynamoBody],
+            [t.awsS3, t.awsS3Body],
+          ].map(([name, what]) => (
+            <div key={name} className="bg-white p-4">
+              <dt className="text-base font-bold">{name}</dt>
+              <dd className="text-base text-muted">{what}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </Page>
   );
 };
