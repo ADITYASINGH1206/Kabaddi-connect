@@ -3,7 +3,11 @@
 > **"Uber-style pickup for the informal recycling economy, with an AI that tells you what your scrap is worth."**  
 > Hackathon: Environmental Hacks, Track 3 (Waste and Energy) | Team: Omnivision
 
+🔗 **Live Frontend (AWS CloudFront CDN)**: [https://d3c9etytddb9yx.cloudfront.net](https://d3c9etytddb9yx.cloudfront.net)  
+⚡ **Live Backend (AWS API Gateway)**: [https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com](https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com/health)
+
 KabadiConnect bridges Indian households with local informal scrap collectors (kabadiwalas) through multimodal AI on **Amazon Bedrock**. Households photograph their recyclables to receive an instant, transparent price range and schedule doorstep collection, while collectors receive pre-qualified, geo-clustered pickup requests with optimized routes.
+
 
 ---
 
