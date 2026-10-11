@@ -1,0 +1,304 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%" style="background-color: #0b1120; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1120" />
+      <stop offset="100%" stop-color="#070a12" />
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="cardGradClient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="cardGradEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#131d31" />
+    </linearGradient>
+    <linearGradient id="cardGradLambda" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#241b2f" />
+      <stop offset="100%" stop-color="#151221" />
+    </linearGradient>
+    <linearGradient id="cardGradAI" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+
+    <!-- Filters & Shadows -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="680" fill="url(#bgGrad)" />
+
+  <!-- Subtle Grid lines -->
+  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+    <line x1="40" y1="0" x2="40" y2="680" />
+    <line x1="280" y1="0" x2="280" y2="680" />
+    <line x1="560" y1="0" x2="560" y2="680" />
+    <line x1="880" y1="0" x2="880" y2="680" />
+    <line x1="1160" y1="0" x2="1160" y2="680" />
+  </g>
+
+  <!-- Top Title Bar -->
+  <g id="Title">
+    <text x="600" y="48" text-anchor="middle" font-size="26" font-weight="800" fill="url(#headerGrad)" letter-spacing="1.5">
+      KabadiConnect — Production AWS Cloud Architecture
+    </text>
+    <text x="600" y="74" text-anchor="middle" font-size="13" font-weight="500" fill="#94a3b8">
+      100% Serverless Cloud Infrastructure | Amazon Bedrock Multimodal Vision | Multi-Criteria Logistics Matching
+    </text>
+  </g>
+
+  <!-- ==================== COLUMN 1: CLIENTS ==================== -->
+  <g id="Col-Clients" transform="translate(40, 100)">
+    <rect width="210" height="540" rx="16" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="210" height="38" rx="16" fill="#1e293b" />
+    <rect y="22" width="210" height="16" fill="#1e293b" />
+    <text x="105" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="0.8">1. CLIENT LAYER (PWA)</text>
+
+    <!-- Card: Household -->
+    <g transform="translate(15, 55)">
+      <rect width="180" height="140" rx="12" fill="url(#cardGradClient)" stroke="#38bdf8" stroke-width="1.2" />
+      <circle cx="28" cy="28" r="14" fill="#0284c7" fill-opacity="0.25" />
+      <text x="28" y="34" text-anchor="middle" font-size="16">📱</text>
+      <text x="50" y="26" font-size="13" font-weight="700" fill="#f8fafc">Household View</text>
+      <text x="50" y="40" font-size="10" font-weight="600" fill="#38bdf8">Mobile / Desktop</text>
+      <line x1="14" y1="52" x2="166" y2="52" stroke="#334155" stroke-width="1" />
+      <text x="16" y="72" font-size="11" fill="#cbd5e1">• Scrap Photo Upload</text>
+      <text x="16" y="92" font-size="11" fill="#cbd5e1">• Bedrock AI Estimates</text>
+      <text x="16" y="112" font-size="11" fill="#cbd5e1">• RangeRuler Weight UI</text>
+      <text x="16" y="132" font-size="11" fill="#cbd5e1">• Doorstep Request &amp; ETA</text>
+    </g>
+
+    <!-- Card: Collector -->
+    <g transform="translate(15, 215)">
+      <rect width="180" height="140" rx="12" fill="url(#cardGradClient)" stroke="#f59e0b" stroke-width="1.2" />
+      <circle cx="28" cy="28" r="14" fill="#d97706" fill-opacity="0.25" />
+      <text x="28" y="34" text-anchor="middle" font-size="16">🚚</text>
+      <text x="50" y="26" font-size="13" font-weight="700" fill="#f8fafc">Collector View</text>
+      <text x="50" y="40" font-size="10" font-weight="600" fill="#f59e0b">Kabadiwala Terminal</text>
+      <line x1="14" y1="52" x2="166" y2="52" stroke="#334155" stroke-width="1" />
+      <text x="16" y="72" font-size="11" fill="#cbd5e1">• Pre-Qualified Lead Feed</text>
+      <text x="16" y="92" font-size="11" fill="#cbd5e1">• "Worth the Trip" Tags</text>
+      <text x="16" y="112" font-size="11" fill="#cbd5e1">• 1-Tap Atomic Accept</text>
+      <text x="16" y="132" font-size="11" fill="#cbd5e1">• Route Optimization (TSP)</text>
+    </g>
+
+    <!-- Card: Public Impact -->
+    <g transform="translate(15, 375)">
+      <rect width="180" height="135" rx="12" fill="url(#cardGradClient)" stroke="#10b981" stroke-width="1.2" />
+      <circle cx="28" cy="28" r="14" fill="#059669" fill-opacity="0.25" />
+      <text x="28" y="34" text-anchor="middle" font-size="16">🌱</text>
+      <text x="50" y="26" font-size="13" font-weight="700" fill="#f8fafc">Impact Ledger</text>
+      <text x="50" y="40" font-size="10" font-weight="600" fill="#10b981">Public Dashboard</text>
+      <line x1="14" y1="52" x2="166" y2="52" stroke="#334155" stroke-width="1" />
+      <text x="16" y="72" font-size="11" fill="#cbd5e1">• Landfill Diversion (kg)</text>
+      <text x="16" y="92" font-size="11" fill="#cbd5e1">• Worker Earnings (₹)</text>
+      <text x="16" y="112" font-size="11" fill="#cbd5e1">• Avoided CO2e (kg)</text>
+      <text x="16" y="132" font-size="11" fill="#cbd5e1">• Live vs Baseline MAPE</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 2: EDGE LAYER ==================== -->
+  <g id="Col-Edge" transform="translate(290, 100)">
+    <rect width="210" height="540" rx="16" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="210" height="38" rx="16" fill="#1e293b" />
+    <rect y="22" width="210" height="16" fill="#1e293b" />
+    <text x="105" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#a78bfa" letter-spacing="0.8">2. AWS EDGE &amp; GATEWAY</text>
+
+    <!-- CloudFront CDN -->
+    <g transform="translate(15, 60)">
+      <rect width="180" height="115" rx="12" fill="url(#cardGradEdge)" stroke="#a78bfa" stroke-width="1.2" />
+      <rect x="14" y="12" width="28" height="28" rx="6" fill="#7c3aed" fill-opacity="0.3" />
+      <text x="28" y="31" text-anchor="middle" font-size="14" fill="#c4b5fd" font-weight="900">CF</text>
+      <text x="48" y="25" font-size="12" font-weight="700" fill="#f8fafc">Amazon CloudFront</text>
+      <text x="48" y="38" font-size="10" fill="#a78bfa">Global Edge CDN</text>
+      <line x1="14" y1="48" x2="166" y2="48" stroke="#334155" stroke-width="1" />
+      <text x="16" y="66" font-size="10.5" fill="#cbd5e1">• HTTPS &amp; Brotli Compression</text>
+      <text x="16" y="84" font-size="10.5" fill="#cbd5e1">• SPA Routing (403/404 handling)</text>
+      <text x="16" y="102" font-size="10.5" fill="#cbd5e1">• Origin Access Control (OAC)</text>
+    </g>
+
+    <!-- S3 Static Bucket -->
+    <g transform="translate(15, 195)">
+      <rect width="180" height="90" rx="12" fill="url(#cardGradEdge)" stroke="#10b981" stroke-width="1.2" />
+      <rect x="14" y="12" width="28" height="28" rx="6" fill="#059669" fill-opacity="0.3" />
+      <text x="28" y="31" text-anchor="middle" font-size="14" fill="#6ee7b7" font-weight="900">S3</text>
+      <text x="48" y="25" font-size="12" font-weight="700" fill="#f8fafc">Frontend S3 Bucket</text>
+      <text x="48" y="38" font-size="10" fill="#6ee7b7">Static Web Hosting</text>
+      <line x1="14" y1="48" x2="166" y2="48" stroke="#334155" stroke-width="1" />
+      <text x="16" y="66" font-size="10.5" fill="#cbd5e1">• AES-256 Encrypted</text>
+      <text x="16" y="82" font-size="10.5" fill="#cbd5e1">• Zero Public Access Block</text>
+    </g>
+
+    <!-- API Gateway HTTP API -->
+    <g transform="translate(15, 305)">
+      <rect width="180" height="205" rx="12" fill="url(#cardGradEdge)" stroke="#38bdf8" stroke-width="1.2" />
+      <rect x="14" y="12" width="28" height="28" rx="6" fill="#0284c7" fill-opacity="0.3" />
+      <text x="28" y="31" text-anchor="middle" font-size="14" fill="#7dd3fc" font-weight="900">API</text>
+      <text x="48" y="25" font-size="12" font-weight="700" fill="#f8fafc">Amazon API Gateway</text>
+      <text x="48" y="38" font-size="10" fill="#38bdf8">HTTP API v2 Engine</text>
+      <line x1="14" y1="48" x2="166" y2="48" stroke="#334155" stroke-width="1" />
+      <text x="16" y="66" font-size="10.5" fill="#cbd5e1">• Strict CORS Configuration</text>
+      <text x="16" y="84" font-size="10.5" fill="#cbd5e1">• Rate Limits (10 rps / 20 burst)</text>
+      <text x="16" y="102" font-size="10.5" fill="#cbd5e1">• Ultra-Low Latency Routing</text>
+      <rect x="14" y="115" width="152" height="75" rx="6" fill="#0b1120" stroke="#334155" stroke-width="1" />
+      <text x="22" y="132" font-size="10" font-family="monospace" fill="#38bdf8">POST /uploads</text>
+      <text x="22" y="148" font-size="10" font-family="monospace" fill="#38bdf8">POST /analyze</text>
+      <text x="22" y="164" font-size="10" font-family="monospace" fill="#38bdf8">POST /listings</text>
+      <text x="22" y="180" font-size="10" font-family="monospace" fill="#38bdf8">POST /pickups/complete</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 3: LAMBDA SERVERLESS ==================== -->
+  <g id="Col-Lambda" transform="translate(540, 100)">
+    <rect width="280" height="540" rx="16" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="280" height="38" rx="16" fill="#1e293b" />
+    <rect y="22" width="280" height="16" fill="#1e293b" />
+    <text x="140" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#fb923c" letter-spacing="0.8">3. AWS LAMBDA COMPUTE (PYTHON 3.12)</text>
+
+    <!-- Function 1: Uploads -->
+    <g transform="translate(15, 52)">
+      <rect width="250" height="60" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1" />
+      <text x="16" y="24" font-size="11.5" font-weight="700" fill="#fdba74">UploadsFunction (POST /uploads)</text>
+      <text x="16" y="42" font-size="10" fill="#cbd5e1">Generates presigned S3 PUT URLs (5MB limit, JPEG)</text>
+    </g>
+
+    <!-- Function 2: Analyze -->
+    <g transform="translate(15, 120)">
+      <rect width="250" height="68" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1.2" />
+      <text x="16" y="24" font-size="11.5" font-weight="700" fill="#fdba74">AnalyzeFunction (POST /analyze)</text>
+      <text x="16" y="42" font-size="10" fill="#cbd5e1">Bedrock Converse API, SHA-256 caching</text>
+      <text x="16" y="58" font-size="10" fill="#cbd5e1">Quality validation, hazardous material guardrail</text>
+    </g>
+
+    <!-- Function 3: Listings -->
+    <g transform="translate(15, 196)">
+      <rect width="250" height="68" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1" />
+      <text x="16" y="24" font-size="11.5" font-weight="700" fill="#fdba74">ListingsFunction (POST /listings, /rates)</text>
+      <text x="16" y="42" font-size="10" fill="#cbd5e1">Multi-criteria collector scoring &amp; auto-matching</text>
+      <text x="16" y="58" font-size="10" fill="#cbd5e1">Score = 0.5×Dist + 0.3×Value + 0.2×Capacity</text>
+    </g>
+
+    <!-- Function 4: Collectors -->
+    <g transform="translate(15, 272)">
+      <rect width="250" height="60" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1" />
+      <text x="16" y="24" font-size="11.5" font-weight="700" fill="#fdba74">CollectorsFunction (GET /collectors, /requests)</text>
+      <text x="16" y="42" font-size="10" fill="#cbd5e1">Active directory, incoming queues, "Worth it" flags</text>
+    </g>
+
+    <!-- Function 5: Pickups & Route -->
+    <g transform="translate(15, 340)">
+      <rect width="250" height="74" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1.2" />
+      <text x="16" y="22" font-size="11.5" font-weight="700" fill="#fdba74">PickupsFunction (/accept, /route, /complete)</text>
+      <text x="16" y="38" font-size="10" fill="#cbd5e1">• Atomic 1-Tap Accept (ConditionExpression)</text>
+      <text x="16" y="54" font-size="10" fill="#cbd5e1">• Nearest-Neighbor Route Optimization</text>
+      <text x="16" y="68" font-size="10" fill="#cbd5e1">• Digital Scale Weighing &amp; Payout Settlement</text>
+    </g>
+
+    <!-- Function 6: Impact -->
+    <g transform="translate(15, 422)">
+      <rect width="250" height="54" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1" />
+      <text x="16" y="22" font-size="11.5" font-weight="700" fill="#fdba74">ImpactFunction (GET /impact)</text>
+      <text x="16" y="40" font-size="10" fill="#cbd5e1">Dual-track sustainability ledger (Seeded vs Live)</text>
+    </g>
+
+    <!-- Function 7: Health -->
+    <g transform="translate(15, 484)">
+      <rect width="250" height="42" rx="8" fill="url(#cardGradLambda)" stroke="#f97316" stroke-width="1" />
+      <text x="16" y="26" font-size="11" font-weight="700" fill="#fdba74">HealthFunction (GET /health)</text>
+    </g>
+  </g>
+
+  <!-- ==================== COLUMN 4: AI & STORAGE ==================== -->
+  <g id="Col-Storage" transform="translate(860, 100)">
+    <rect width="300" height="540" rx="16" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="300" height="38" rx="16" fill="#1e293b" />
+    <rect y="22" width="300" height="16" fill="#1e293b" />
+    <text x="150" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#34d399" letter-spacing="0.8">4. AMAZON BEDROCK &amp; STORAGE</text>
+
+    <!-- Amazon Bedrock -->
+    <g transform="translate(15, 52)">
+      <rect width="270" height="120" rx="12" fill="url(#cardGradAI)" stroke="#06b6d4" stroke-width="1.5" />
+      <rect x="14" y="12" width="30" height="30" rx="6" fill="#0891b2" fill-opacity="0.3" />
+      <text x="29" y="32" text-anchor="middle" font-size="16">🧠</text>
+      <text x="54" y="26" font-size="13" font-weight="700" fill="#f8fafc">Amazon Bedrock</text>
+      <text x="54" y="40" font-size="10" font-weight="600" fill="#22d3ee">amazon.nova-lite-v1:0</text>
+      <line x1="14" y1="50" x2="256" y2="50" stroke="#334155" stroke-width="1" />
+      <text x="16" y="68" font-size="10.5" fill="#cbd5e1">• Multimodal Scrap Vision Itemization</text>
+      <text x="16" y="85" font-size="10.5" fill="#cbd5e1">• 17-Category Standardized Scrap Taxonomy</text>
+      <text x="16" y="102" font-size="10.5" fill="#cbd5e1">• Volumetric Range Estimation (kg_low/high)</text>
+    </g>
+
+    <!-- DynamoDB Tables -->
+    <g transform="translate(15, 182)">
+      <rect width="270" height="175" rx="12" fill="url(#cardGradAI)" stroke="#3b82f6" stroke-width="1.5" />
+      <rect x="14" y="12" width="30" height="30" rx="6" fill="#2563eb" fill-opacity="0.3" />
+      <text x="29" y="32" text-anchor="middle" font-size="16">⚡</text>
+      <text x="54" y="26" font-size="13" font-weight="700" fill="#f8fafc">Amazon DynamoDB</text>
+      <text x="54" y="40" font-size="10" font-weight="600" fill="#60a5fa">5 On-Demand Serverless Tables</text>
+      <line x1="14" y1="50" x2="256" y2="50" stroke="#334155" stroke-width="1" />
+      <text x="16" y="68" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#93c5fd">RatesTable:</tspan> 17 Indicative Scrap Rates</text>
+      <text x="16" y="86" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#93c5fd">CollectorsTable:</tspan> Geolocation &amp; Capacities</text>
+      <text x="16" y="104" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#93c5fd">ListingsTable:</tspan> Open Scrap Pickup Requests</text>
+      <text x="16" y="122" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#93c5fd">PickupsTable:</tspan> Atomic Race-Safe States</text>
+      <text x="16" y="140" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#93c5fd">AnalysisCacheTable:</tspan> SHA-256 Hash Caching</text>
+      <text x="16" y="158" font-size="9.5" fill="#38bdf8">↳ Conditional Writes prevent double-dispatch</text>
+    </g>
+
+    <!-- Amazon S3 Storage -->
+    <g transform="translate(15, 367)">
+      <rect width="270" height="90" rx="12" fill="url(#cardGradAI)" stroke="#10b981" stroke-width="1.2" />
+      <rect x="14" y="12" width="30" height="30" rx="6" fill="#059669" fill-opacity="0.3" />
+      <text x="29" y="32" text-anchor="middle" font-size="16">🪣</text>
+      <text x="54" y="26" font-size="13" font-weight="700" fill="#f8fafc">Amazon S3 Photos</text>
+      <text x="54" y="40" font-size="10" font-weight="600" fill="#34d399">PhotosBucket (Private Storage)</text>
+      <line x1="14" y1="50" x2="256" y2="50" stroke="#334155" stroke-width="1" />
+      <text x="16" y="68" font-size="10.5" fill="#cbd5e1">• Presigned PUT URLs (Max 5MB JPEG)</text>
+      <text x="16" y="84" font-size="10.5" fill="#cbd5e1">• 7-Day Automatic Lifecycle Expiration</text>
+    </g>
+
+    <!-- CloudWatch -->
+    <g transform="translate(15, 467)">
+      <rect width="270" height="60" rx="12" fill="url(#cardGradAI)" stroke="#e11d48" stroke-width="1.2" />
+      <text x="16" y="24" font-size="11.5" font-weight="700" fill="#fda4af">Amazon CloudWatch</text>
+      <text x="16" y="42" font-size="10" fill="#cbd5e1">Continuous Error Alarms, Metrics &amp; Audit Logs</text>
+    </g>
+  </g>
+
+  <!-- ==================== CONNECTING FLOW ARROWS ==================== -->
+  <!-- Client to CloudFront (Static) -->
+  <path d="M 235 220 L 290 220" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow)" fill="none" />
+  <!-- Client to API Gateway (Data) -->
+  <path d="M 235 380 L 290 380" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)" fill="none" />
+  <!-- API Gateway to Lambdas -->
+  <path d="M 485 410 L 540 410" stroke="#fb923c" stroke-width="2.5" marker-end="url(#arrowAmber)" fill="none" />
+  <!-- Lambdas to Bedrock -->
+  <path d="M 805 250 L 860 170" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+  <!-- Lambdas to DynamoDB -->
+  <path d="M 805 370 L 860 300" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arrow)" fill="none" />
+  <!-- Lambdas to S3 Photos -->
+  <path d="M 805 450 L 860 415" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" fill="none" />
+
+</svg>

@@ -51,7 +51,13 @@ In India, **over 90% of post-consumer dry waste is collected and sorted by 4–5
 
 ## System Architecture
 
+![KabadiConnect AWS Cloud Architecture](docs/architecture.svg)
+
+<details>
+<summary>Click to view Mermaid Architecture Flowchart</summary>
+
 ```mermaid
+
 graph TD
     subgraph Clients["Clients (Mobile & Desktop PWA)"]
         H["Household: Photo, RangeRuler & Booking"]
@@ -114,8 +120,10 @@ graph TD
     L_IM -->|Aggregate Verified| DDB_P
     Compute -.->|Metrics| CW
 ```
+</details>
 
 ---
+
 
 ## User Journeys and Sequence Flows
 
