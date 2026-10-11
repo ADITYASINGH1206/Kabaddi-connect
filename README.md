@@ -12,19 +12,19 @@
 
 ---
 
-## 🔗 Live Production Deployments
+## Live Production Deployments
 
-- 🌐 **Public Frontend (CloudFront Global CDN)**:  
-  👉 **[https://d3c9etytddb9yx.cloudfront.net](https://d3c9etytddb9yx.cloudfront.net)**  
+- **Public Frontend (CloudFront Global CDN)**:  
+  [https://d3c9etytddb9yx.cloudfront.net](https://d3c9etytddb9yx.cloudfront.net)  
   *(Optimized PWA for mobile browsers and desktop, served with HTTPS and SPA routing)*
 
-- ⚡ **Public Serverless API (API Gateway HTTP API v2)**:  
-  👉 **[https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com](https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com/health)**  
+- **Public Serverless API (API Gateway HTTP API v2)**:  
+  [https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com](https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com/health)  
   *(Backed by AWS Lambda Python 3.12, DynamoDB on-demand, and Amazon Bedrock)*
 
 ---
 
-## 📌 The Problem & The Context
+## The Problem and Context
 
 In India, **over 90% of post-consumer dry waste is collected and sorted by 4–5 million informal waste collectors (*kabadiwalas*)**, who divert tens of thousands of tonnes of recyclables from municipal landfills every single day. Despite being the backbone of urban circularity, the sector faces structural inefficiencies:
 
@@ -34,22 +34,22 @@ In India, **over 90% of post-consumer dry waste is collected and sorted by 4–5
 
 ---
 
-## 💡 The Solution: KabadiConnect
+## The Solution: KabadiConnect
 
 **KabadiConnect** is a hyper-local, two-sided mobile platform that formalizes scrap exchange while protecting informal worker livelihoods:
 
-- 📸 **Multimodal Vision on Amazon Bedrock**: Households snap a photo of their scrap pile. Amazon Nova Lite identifies items against a 17-material taxonomy, flags blur or bad lighting, detects hazardous materials, and calculates a fair, transparent ₹ price range.
-- 🎚️ **Interactive RangeRuler**: Users easily adjust estimated weight ranges without tedious manual text input.
-- 🎯 **Automated Multi-Criteria Matching**: Ranks active nearby collectors within a 5 km radius based on proximity ($50\%$), trip value ($30\%$), and vehicle payload capacity ($20\%$).
-- 📱 **One-Tap Collector Acceptance**: Pushes pre-qualified leads with "Worth the Trip" indicators to the matched collector's mobile queue.
-- 🔒 **Race-Safe Concurrency**: DynamoDB conditional writes ensure that if two collectors tap "Accept" on the same request, exactly one wins and the other receives an instant notification.
-- 🗺️ **Optimized Pickup Routing**: Heuristic route sequencing generates turn-by-turn stops with Google Maps links.
-- ⚠️ **Hazardous Waste Separation**: Batteries and CRT monitors bypass collectors completely and direct households to certified e-waste drop-off centers.
-- 📊 **Honest Impact Accounting**: A live sustainability ledger tracking landfill diversion (kg), informal worker payouts (₹), and avoided lifecycle greenhouse gas emissions ($\text{kg CO}_2\text{e}$).
+- **Multimodal Vision on Amazon Bedrock**: Households snap a photo of their scrap pile. Amazon Nova Lite identifies items against a 17-material taxonomy, flags blur or bad lighting, detects hazardous materials, and calculates a fair, transparent INR price range.
+- **Interactive RangeRuler**: Users easily adjust estimated weight ranges without tedious manual text input.
+- **Automated Multi-Criteria Matching**: Ranks active nearby collectors within a 5 km radius based on proximity (50%), trip value (30%), and vehicle payload capacity (20%).
+- **One-Tap Collector Acceptance**: Pushes pre-qualified leads with "Worth the Trip" indicators to the matched collector's mobile queue.
+- **Race-Safe Concurrency**: DynamoDB conditional writes ensure that if two collectors tap "Accept" on the same request, exactly one wins and the other receives an instant notification.
+- **Optimized Pickup Routing**: Heuristic route sequencing generates turn-by-turn stops with Google Maps links.
+- **Hazardous Waste Separation**: Batteries and CRT monitors bypass collectors completely and direct households to certified e-waste drop-off centers.
+- **Honest Impact Accounting**: A live sustainability ledger tracking landfill diversion (kg), informal worker payouts (INR), and avoided lifecycle greenhouse gas emissions (kg CO2e).
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -117,7 +117,7 @@ graph TD
 
 ---
 
-## 🔄 User Journeys & Sequence Flows
+## User Journeys and Sequence Flows
 
 ### 1. Household Scrap Photo to Matched Collector
 ```mermaid
@@ -141,7 +141,7 @@ sequenceDiagram
     else Cache Hit
         DDB-->>API: Instant cached result (zero extra Bedrock tokens)
     end
-    API-->>H: Returns items + weight ranges + ₹ price low/high
+    API-->>H: Returns items + weight ranges + INR price low/high
     H->>API: 4. Confirm pickup & location chip (POST /listings)
     API->>DDB: Multi-criteria filter & score active collectors
     API-->>H: Returns top 3 matched collectors with distance & ETA
@@ -178,7 +178,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Core Engineering Innovations
+## Core Engineering Innovations
 
 ### 1. Amazon Bedrock Multimodal Vision & Image Hash Caching
 - Utilizes `amazon.nova-lite-v1:0` via the Bedrock Converse API.
@@ -187,7 +187,7 @@ sequenceDiagram
 - **Cost & Rate Guard**: Computes SHA-256 hash of image bytes. Identical uploads return in `< 20ms` from DynamoDB (`cached: true`), preventing redundant Bedrock token consumption.
 
 ### 2. Multi-Criteria Collector Matching Algorithm
-Collectors are filtered by service radius ($\le 5\text{ km}$), accepted material categories, e-waste authorization, and available vehicle payload capacity. Qualified collectors are scored using a weighted multi-criteria function:
+Collectors are filtered by service radius (<= 5 km), accepted material categories, e-waste authorization, and available vehicle payload capacity. Qualified collectors are scored using a weighted multi-criteria function:
 $$\text{Score} = 0.5 \times \text{Proximity} + 0.3 \times \min\left(1.0, \frac{\text{Trip Value}}{₹500}\right) + 0.2 \times \text{Available Capacity}$$
 
 ### 3. Concurrency Safety with DynamoDB Conditional Writes
@@ -208,14 +208,14 @@ Unlike greenwashed impact claims, the `/impact` engine maintains a strict separa
 
 ---
 
-## 📋 Comprehensive API Reference
+## Comprehensive API Reference
 
 All endpoints are hosted on the public API Gateway: `https://xzsflevsg9.execute-api.ap-southeast-2.amazonaws.com`
 
 | Method | Endpoint | Description | Key Request / Response Fields |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/health` | Liveness & readiness probe | Returns `{ status: "healthy", version: "1.0.0", env: "production" }` |
-| `GET` | `/rates` | Real-time indicative scrap price board | Returns array of 17 materials with rates (₹/kg), Hindi/English labels, and $\text{CO}_2\text{e}$ factors |
+| `GET` | `/rates` | Real-time indicative scrap price board | Returns array of 17 materials with rates (INR/kg), Hindi/English labels, and CO2e factors |
 | `POST` | `/uploads` | Generates presigned S3 PUT URL | Input: `{ contentType: "image/jpeg" }` &rarr; Returns: `{ uploadUrl, imageKey, maxSizeBytes: 5242880 }` |
 | `POST` | `/analyze` | Amazon Bedrock vision analysis | Input: `{ imageKey }` &rarr; Returns itemized scrap, weights, quality check, hazards, and cache status |
 | `POST` | `/listings` | Submits scrap pickup & triggers matching | Input: `{ sellerName, sellerPhone, address, lat, lng, items, pickupWindow }` &rarr; Returns `{ listingId, matches }` |
@@ -224,12 +224,12 @@ All endpoints are hosted on the public API Gateway: `https://xzsflevsg9.execute-
 | `GET` | `/collectors/{id}/requests` | Collector's incoming request queue | Returns eligible open listings in collector's radius with "Worth the trip" flags |
 | `POST` | `/listings/{id}/accept` | Atomic one-tap collector acceptance | Input: `{ collectorId }` &rarr; Transitions listing to `ACCEPTED` and initializes pickup |
 | `POST` | `/collectors/{id}/route` | Generates optimized pickup sequence | Input: `{ collectorId, currentLat, currentLng }` &rarr; Returns ordered stops, km, and Google Maps URL |
-| `POST` | `/pickups/{id}/complete` | Doorstep scale weighing & settlement | Input: `{ weighedItems: [{ material, weight_kg }] }` &rarr; Computes payout (₹) and estimation error % |
-| `GET` | `/impact` | Public sustainability and income metrics | Returns total kg diverted, collector income (₹), $\text{CO}_2\text{e}$ avoided, and live MAPE accuracy |
+| `POST` | `/pickups/{id}/complete` | Doorstep scale weighing & settlement | Input: `{ weighedItems: [{ material, weight_kg }] }` &rarr; Computes payout (INR) and estimation error % |
+| `GET` | `/impact` | Public sustainability and income metrics | Returns total kg diverted, collector income (INR), CO2e avoided, and live MAPE accuracy |
 
 ---
 
-## 📂 Repository File Tree
+## Repository Structure
 
 ```
 Kabaddi-connect/
@@ -258,7 +258,7 @@ Kabaddi-connect/
 │   └── vite.config.ts         # Vite build configuration
 ├── config/
 │   ├── taxonomy.json          # 17-item standardized scrap taxonomy
-│   ├── rates.seed.json        # Indicative Delhi-NCR baseline scrap rates (₹/kg)
+│   ├── rates.seed.json        # Indicative Delhi-NCR baseline scrap rates (INR/kg)
 │   └── emission_factors.json  # Lifecycle CO2e avoided factors per kg recycled
 ├── seed/
 │   ├── collectors.json        # 10 realistic synthetic collectors in North West Delhi
@@ -279,7 +279,7 @@ Kabaddi-connect/
 
 ---
 
-## 🚀 Local Development & Setup
+## Local Development and Setup
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher)
@@ -314,7 +314,7 @@ python3 scripts/smoke_test.py --api-url https://xzsflevsg9.execute-api.ap-southe
 
 ---
 
-## ☁️ Deployment Instructions (AWS SAM)
+## Deployment Instructions (AWS SAM)
 
 To deploy your own instance of the complete stack to AWS:
 
@@ -351,7 +351,7 @@ aws cloudfront create-invalidation --distribution-id <DistributionId> --paths "/
 
 ---
 
-## ⚖️ Honest Disclosures & Known Limitations
+## Honest Disclosures and Known Limitations
 
 - **Vision Weight Estimation**: Weights estimated from single 2D photos are approximate volumetric approximations. The user is provided an interactive RangeRuler slider to adjust them, and final legal settlement always occurs on certified digital scales at the doorstep.
 - **Synthetic Seed Data**: Collector profiles and initial demo listings are synthetic fixtures centered in North West Delhi (Rohini, DTU, Pitampura, Shalimar Bagh) to allow judges to test realistic geographic clustering.
@@ -360,7 +360,7 @@ aws cloudfront create-invalidation --distribution-id <DistributionId> --paths "/
 
 ---
 
-## 👥 Hackathon Team & Track
+## Hackathon Team and Track
 
 - **Hackathon**: Environmental Hacks 2026
 - **Track**: Track 3 — Waste and Energy
