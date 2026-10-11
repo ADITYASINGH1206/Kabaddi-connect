@@ -39,15 +39,43 @@ MIN_WEIGHT_KG = 0.1
 MAX_WEIGHT_KG = 200.0
 
 
+CANONICAL_MATERIAL_ORDER = [
+    "newspaper_paper",
+    "cardboard",
+    "books_notebooks",
+    "pet_bottles",
+    "hdpe_plastic",
+    "mixed_plastic",
+    "iron_steel",
+    "aluminium",
+    "copper",
+    "brass",
+    "glass_bottles",
+    "ewaste_laptop",
+    "ewaste_phone",
+    "ewaste_small_appliance",
+    "ewaste_large_appliance",
+    "ewaste_battery_or_crt",
+    "vehicle_scrap",
+    "tyres_rubber",
+]
+
+
+def sort_rates_canonically(rates_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    order_map = {mat: i for i, mat in enumerate(CANONICAL_MATERIAL_ORDER)}
+    return sorted(rates_list, key=lambda r: order_map.get(r.get("material", ""), 999))
+
+
 def handle_get_rates(event, context):
-    """GET /rates — Returns the current material rate card."""
+    """GET /rates — Returns the current material rate card, canonically sorted."""
     request_id = getattr(context, "aws_request_id", "local-request")
     try:
         rates = get_all_rates()
         if rates:
-            return api_response(200, rates)
+            return api_response(200, sort_rates_canonically(rates))
     except Exception as e:
         logger.warning(f"Could not read from DynamoDB Rates table ({e}); falling back to seed config.")
+
 
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))

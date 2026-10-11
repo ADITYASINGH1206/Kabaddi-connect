@@ -4,6 +4,20 @@ import { getTranslation } from '../i18n/translations';
 import { ArrowRight, BarChart3, Camera, ShieldAlert, Truck } from 'lucide-react';
 import { Page } from './ui';
 
+// Canonical priority order for common dry recyclables seen on painted Delhi kabadi rate boards
+const COMMON_RECYCLABLES_ORDER = [
+  'newspaper_paper',
+  'cardboard',
+  'books_notebooks',
+  'iron_steel',
+  'pet_bottles',
+  'hdpe_plastic',
+  'aluminium',
+  'copper',
+  'brass',
+  'glass_bottles',
+];
+
 interface LandingRoleSelectProps {
   lang: Language;
   onSelectRole: (role: UserRole) => void;
@@ -16,7 +30,27 @@ export const LandingRoleSelect: React.FC<LandingRoleSelectProps> = ({
   rates = [],
 }) => {
   const t = getTranslation(lang);
-  const board = rates.filter((r) => !r.hazardous).slice(0, 7);
+  // Exclude electronics/e-waste (laptops, computers), vehicles, and hazardous items from the daily doorstep rate board
+  const board = React.useMemo(() => {
+    return rates
+      .filter(
+        (r) =>
+          !r.hazardous &&
+          !r.material.startsWith('ewaste_') &&
+          !r.material.includes('vehicle') &&
+          !r.material.includes('tyre')
+      )
+      .sort((a, b) => {
+        const idxA = COMMON_RECYCLABLES_ORDER.indexOf(a.material);
+        const idxB = COMMON_RECYCLABLES_ORDER.indexOf(b.material);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      })
+      .slice(0, 7);
+  }, [rates]);
+
 
   return (
     <Page className="gap-6 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14 lg:pt-12">
